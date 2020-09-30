@@ -224,7 +224,7 @@ def nakshatra(jd, place):
     leap_nak = nak + 1
     approx_end = inverse_lagrange(offsets, longitudes, leap_nak * 360 / 27)
     ends = (rise - jd + approx_end) * 24 + tz
-    answer += [int(leap_nak), to_dms(ends)]
+    answer += [int(leap_nak % 28), to_dms(ends)]
 
   return answer
 
@@ -274,7 +274,7 @@ def yoga(jd, place):
     degrees_left = leap_yog * (360 / 27) - total
     approx_end = inverse_lagrange(x, y, degrees_left)
     ends = (rise + approx_end - jd) * 24 + tz
-    answer += [int(leap_yog), to_dms(ends)]
+    answer += [int(leap_yog %27), to_dms(ends)]
 
   return answer
 
