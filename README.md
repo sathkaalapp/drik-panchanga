@@ -83,6 +83,27 @@ this purpose.
 Third, click 'Compute'.  Now the fields like tithi, etc. are computed and shown on the GUI.
 
 
+Using the CLI:
+--------------
+Usage: panchanga.py -C -l location -d DD-MM-YYYY [-e [m|y]] [-v]
+usage: panchanga.py -C -x longitude -y latitude -t timezone -d DD-MM-YYYY [-e [m|y]] [-v]
+usage: panchanga.py -C -l location -i [1-30] -m [1-13] [-v]
+usage: panchanga.py -C -x longitude -y latitude -t timezone -i tithi -m masam [-v]
+usage: panchanga.py -L [Location_Name] [-v]
+
+panchanga.py: error: option -i requires tithis in range 1-30 and -m requires months in range 1-12
+python3 panchanga.py -L [location name] [-v]
+python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY [-e [m|y]] [-v]
+python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY -i <1-30>  -m <1-12> [-v]
+Examples:
+python3 panchanga.py -L                            # lists currently available locations
+python3 panchanga.py -L Tirupati -v                # if Tirupati is part of availabe list, then display its latitude and logitude
+python3 panchanga.py -C -l Tirupati -d 10-11-2020  # Displays Tirupati's detailed panchang info of given date
+python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020  # Displays given location's detailed panchang info of given date
+python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  # Displays Tirupati's detailed panchang info of given telugu month
+python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year
+python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates
+
 Accuracy
 --------
 

@@ -46,8 +46,9 @@ SUB_C_E_USAGE_STR    = "Couldn't find proper input value for -e option, provide 
 SUB_C_IM_USAGE_STR   = "option -i requires tithis in range 1-30 and -m requires months in range 1-12"
 SUB_C_D_USAGE_STR    = "option (-d) requires proper date in DD-MM-YYYY format"
 SUB_C_L_USAGE_STR    = "option (-l) requires proper location name, please get proper location using -L option"
-MAIN_OPT_AL_USE_STR =  "python3 panchanga.py -L [location name] [-v]"
-MAIN_OPT_AC_USE_STR =  "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY [-e [m|y]] [-v]"
+MAIN_OPT_AL_USE_STR  =  "python3 panchanga.py -L [location name] [-v]"
+MAIN_OPT_AC_USE_STR  =  "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY [-e [m|y]] [-v]"
+MAIN_OPT_AC_USE_STR1 =  "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY -i <1-30>  -m <1-12> [-v]"
 MAIN_OPT_C_USAGE_STR =  "option(-C) requires date in -d DD-MM-YYYY and [ [-l location name] or [-x latitude, -y longitude -t timezone]] [-e [m|y]]"
 MAIN_OPT_L_USAGE_STR =  "option(-L) displays list of all predefined locations,  -v to display latitude, longitude locations and timezone"
 MAIN_OPT_USAGE_GUIDE =  "Examples:"
@@ -58,9 +59,10 @@ MAIN_OPT_USAGE_EX3   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020  # Di
 MAIN_OPT_USAGE_EX4   =  "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020  # Displays given location's detailed panchang info of given date"
 MAIN_OPT_USAGE_EX5   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  # Displays Tirupati's detailed panchang info of given telugu month"
 MAIN_OPT_USAGE_EX6   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year"
+MAIN_OPT_USAGE_EX7   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates"
 
-MAIN_OPT_ALL_USE_STR = MAIN_OPT_AL_USE_STR + "\n" + MAIN_OPT_AC_USE_STR
-MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6
+MAIN_OPT_ALL_USE_STR = MAIN_OPT_AL_USE_STR + "\n" + MAIN_OPT_AC_USE_STR + "\n" +  MAIN_OPT_AC_USE_STR1
+MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7
 MAIN_USAGE_STR = MAIN_OPT_ALL_USE_STR + "\n" + MAIN_OPT_USAGE_GUIDE + "\n" + MAIN_OPT_USAGE_EXM
 
 format_time = lambda t: "%02d:%02d:%02d" % (t[0], t[1], t[2])
@@ -1014,7 +1016,14 @@ if __name__ == "__main__":
                     print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
             else:
                 print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
- 
+
+            if given_tithi < 1 or given_tithi > 30:
+                print("Invalid input value (%s) for -i option, provide in range 1-30." %(given_tithi))
+                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            if given_masam < 1 or given_masam > 12:
+                print("Invalid input value (%s) for -m option, provide in range 1-12." %(given_masam))
+                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+
             compute_next_gegorian_date_of_give_hindu_data(location, date, given_tithi, given_masam, verbose)
             sys.exit(2)
 
