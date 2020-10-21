@@ -419,7 +419,7 @@ def compute_detailed_info_for_given_dates(location, date, extra_option, debug):
     if extra_option == 'None':
        date_info = compute_detailed_info_for_a_given_day(location, date, debug)
        #print (date_info)
-       #x = json.dumps(date_info)
+       #x = json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=True, indent=4)
        #print(x)
        return date_info
     if extra_option == 'm':
@@ -795,7 +795,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     date_info['sunrise']=format_time(srise)
     if debug == 1:
       print("{SunSet: %s}" % format_time(sset))
-    date_info['sunset']=format_time(srise)
+    date_info['sunset']=format_time(sset)
 
     if debug == 1:
       print("{MoonRise: %s}" % format_time(mrise))
@@ -803,7 +803,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
 
     if debug == 1:
       print("{MoonSet: %s}" % format_time(mset))
-    date_info['mset']=format_time(mrise)
+    date_info['mset']=format_time(mset)
 
     name, hms = format_name_hms(ti, tithis)
     if debug == 1:
@@ -906,8 +906,8 @@ if __name__ == "__main__":
   # parse all input options
   parser = optparse.OptionParser(usage="usage: %prog -C -l location -d DD-MM-YYYY [-e [m|y]] [-v] \n"
                                        "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY [-e [m|y]] [-v] \n"
-                                       "usage: %prog -C -l location -i [1-30] -m [1-13] [-v] \n"
-                                       "usage: %prog -C -x longitude -y latitude -t timezone -i tithi -m masam [-v] \n"
+                                       "usage: %prog -C -l location -d DD-MM-YYYY -i [1-30] -m [1-13] [-v] \n"
+                                       "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY -i tithi -m masam [-v] \n"
                                        "usage: %prog -L [Location_Name] [-v] \n",
                                        version = "%prog 1.0")
 
@@ -1029,7 +1029,8 @@ if __name__ == "__main__":
             sys.exit(2)
 
         computedDict = compute_detailed_info_for_given_dates(location, date, extra_option, verbose)
-        print(json.dumps(computedDict))
+        #print(json.dumps(computedDict))
+        print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
         sys.exit(2)
 
   print("Usage:\n%s" % (MAIN_USAGE_STR))
