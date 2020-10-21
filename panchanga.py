@@ -60,9 +60,10 @@ MAIN_OPT_USAGE_EX4   =  "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia
 MAIN_OPT_USAGE_EX5   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  # Displays Tirupati's detailed panchang info of given telugu month"
 MAIN_OPT_USAGE_EX6   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year"
 MAIN_OPT_USAGE_EX7   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates"
+MAIN_OPT_USAGE_EX8   =  "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020 -i 5 -m 10  # Displays given location's detailed panchang info of given tithi and masam"
 
 MAIN_OPT_ALL_USE_STR = MAIN_OPT_AL_USE_STR + "\n" + MAIN_OPT_AC_USE_STR + "\n" +  MAIN_OPT_AC_USE_STR1
-MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7
+MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7 + "\n" + MAIN_OPT_USAGE_EX8
 MAIN_USAGE_STR = MAIN_OPT_ALL_USE_STR + "\n" + MAIN_OPT_USAGE_GUIDE + "\n" + MAIN_OPT_USAGE_EXM
 
 format_time = lambda t: "%02d:%02d:%02d" % (t[0], t[1], t[2])
@@ -418,7 +419,7 @@ def compute_detailed_info_for_given_dates(location, date, extra_option, debug):
     if extra_option == 'None':
        date_info = compute_detailed_info_for_a_given_day(location, date, debug)
        #print (date_info)
-       #x = json.dumps(date_info)
+       #x = json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=True, indent=4)
        #print(x)
        return date_info
     if extra_option == 'm':
@@ -794,7 +795,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     date_info['sunrise']=format_time(srise)
     if debug == 1:
       print("{SunSet: %s}" % format_time(sset))
-    date_info['sunset']=format_time(srise)
+    date_info['sunset']=format_time(sset)
 
     if debug == 1:
       print("{MoonRise: %s}" % format_time(mrise))
@@ -802,7 +803,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
 
     if debug == 1:
       print("{MoonSet: %s}" % format_time(mset))
-    date_info['mset']=format_time(mrise)
+    date_info['mset']=format_time(mset)
 
     name, hms = format_name_hms(ti, tithis)
     if debug == 1:
@@ -905,8 +906,8 @@ if __name__ == "__main__":
   # parse all input options
   parser = optparse.OptionParser(usage="usage: %prog -C -l location -d DD-MM-YYYY [-e [m|y]] [-v] \n"
                                        "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY [-e [m|y]] [-v] \n"
-                                       "usage: %prog -C -l location -i [1-30] -m [1-13] [-v] \n"
-                                       "usage: %prog -C -x longitude -y latitude -t timezone -i tithi -m masam [-v] \n"
+                                       "usage: %prog -C -l location -d DD-MM-YYYY -i [1-30] -m [1-13] [-v] \n"
+                                       "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY -i tithi -m masam [-v] \n"
                                        "usage: %prog -L [Location_Name] [-v] \n",
                                        version = "%prog 1.0")
 
@@ -1028,7 +1029,8 @@ if __name__ == "__main__":
             sys.exit(2)
 
         computedDict = compute_detailed_info_for_given_dates(location, date, extra_option, verbose)
-        print(json.dumps(computedDict))
+        #print(json.dumps(computedDict))
+        print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
         sys.exit(2)
 
   print("Usage:\n%s" % (MAIN_USAGE_STR))
