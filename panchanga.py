@@ -181,19 +181,25 @@ def tithi(jd, place):
   # compute fraction of day (after sunrise) needed to traverse 'degrees_left'
   approx_end = inverse_lagrange(x, y, degrees_left)
   ends = (rise + approx_end -jd) * 24 + tz
-  answer = [int(today % 31), to_dms(ends)]
+  today1 = today
+  if int(today) > 30 :
+      today1 = int(today) % 30
+  answer = [int(today1), to_dms(ends)]
 
   # 5. Check for skipped tithi
   moon_phase_tmrw = lunar_phase(rise + 1)
   tomorrow = ceil(moon_phase_tmrw / 12)
-  isSkipped = (tomorrow - today) % 30 > 1
+  isSkipped = (int(tomorrow) - int(today)) % 30 > 1
+
   if isSkipped:
     # interpolate again with same (x,y)
     leap_tithi = today + 1
     degrees_left = leap_tithi * 12 - moon_phase
     approx_end = inverse_lagrange(x, y, degrees_left)
     ends = (rise + approx_end -jd) * 24 + place.timezone
-    answer += [int(leap_tithi % 30), to_dms(ends)]
+    if int(leap_tithi) > 30:
+        leap_tithi = int(leap_tithi) % 30
+    answer += [int(leap_tithi), to_dms(ends)]
 
   return answer
 
@@ -220,7 +226,10 @@ def nakshatra(jd, place):
   x = offsets
   approx_end = inverse_lagrange(x, y, nak * 360 / 27)
   ends = (rise - jd + approx_end) * 24 + tz
-  answer = [int(nak), to_dms(ends)]
+  nak1 = nak
+  if int(nak) > 27 :
+      nak1 = int(nak) % 27
+  answer = [int(nak1), to_dms(ends)]
 
   # 4. Check for skipped nakshatra
   nak_tmrw = ceil(longitudes[-1] * 27 / 360)
@@ -229,7 +238,9 @@ def nakshatra(jd, place):
     leap_nak = nak + 1
     approx_end = inverse_lagrange(offsets, longitudes, leap_nak * 360 / 27)
     ends = (rise - jd + approx_end) * 24 + tz
-    answer += [int(leap_nak % 27), to_dms(ends)]
+    if int(leap_nak) > 27:
+        leap_nak = int(leap_nak) % 27
+    answer += [int(leap_nak), to_dms(ends)]
 
   return answer
 
@@ -265,7 +276,10 @@ def yoga(jd, place):
   # compute fraction of day (after sunrise) needed to traverse 'degrees_left'
   approx_end = inverse_lagrange(x, y, degrees_left)
   ends = (rise + approx_end - jd) * 24 + tz
-  answer = [int(yog), to_dms(ends)]
+  yog1 = yog
+  if int(yog) > 27 :
+      yog1 = int(yog) % 27
+  answer = [int(yog1), to_dms(ends)]
 
   # 5. Check for skipped yoga
   lunar_long_tmrw = (lunar_longitude(rise + 1)[0] - swe.get_ayanamsa_ut(rise + 1)) % 360
@@ -279,7 +293,9 @@ def yoga(jd, place):
     degrees_left = leap_yog * (360 / 27) - total
     approx_end = inverse_lagrange(x, y, degrees_left)
     ends = (rise + approx_end - jd) * 24 + tz
-    answer += [int(leap_yog %27), to_dms(ends)]
+    if int(leap_yog) > 27:
+        leap_yog = int(leap_yog) % 27
+    answer += [int(leap_yog), to_dms(ends)]
 
   return answer
 
@@ -418,15 +434,13 @@ def compute_detailed_info_for_given_dates(location, date, extra_option, debug):
        print("Given date (%s) extra Option (%s):" %(date, extra_option))
     if extra_option == 'None':
        date_info = compute_detailed_info_for_a_given_day(location, date, debug)
-       #print (date_info)
-       #x = json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-       #print(x)
        return date_info
     if extra_option == 'm':
        date_info = compute_detailed_info_for_a_given_month(location, date, debug)
        return date_info
     if extra_option == 'y':
        date_info = compute_detailed_info_for_a_given_year(location, date, debug)
+       return date_info
 
 def compute_detailed_info_for_a_given_year(location, date, debug):
 
@@ -472,15 +486,18 @@ def compute_detailed_info_for_a_given_year(location, date, debug):
     if debug:
         print("Yugadi in Gregorain Date is: %s" % (format_date(yugadi_jd)))
 
-    print("Yugadi in Gregorain Date is: %s" % (format_date(yugadi_jd)))
+    #print("Yugadi in Gregorain Date is: %s" % (format_date(yugadi_jd)))
     rVal = {}
     i = 1
     month_start_jd = yugadi_jd
-    while i > 0 and i < 13:
+
+    masam = 'None'
+    while (not 'Phalguna masa' in masam) :
         yugadi_start_date = format_date(month_start_jd)
         month_info =  compute_detailed_info_for_a_given_month(location, yugadi_start_date, debug)
-        rVal[i] = month_info;
-        print (month_info)
+        rVal[i] = month_info
+        if debug:
+            print (month_info)
         cur_month_end_date = month_info['monthInfo']['end_date']
         if debug:
             print("This month_last_date %s" %(cur_month_end_date))
@@ -490,10 +507,11 @@ def compute_detailed_info_for_a_given_year(location, date, debug):
         i_yy=int(yyyy)
         jd = gregorian_to_jd(Date(i_yy, i_mm, i_dd))
         month_start_jd =  jd_to_gregorian(jd + 1)
+        masam = month_info['monthInfo']['month_name']
+        if debug:
+            print ("Masam: %s " % masam)
         i =  i + 1
-      
-    sys.exit(2)
-
+    return (rVal)
 
 def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, masam_given, debug):
     if debug:
@@ -516,7 +534,6 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     masam = masa(jd, place)
     nak = nakshatra(jd, place)
 
-    i = 0
     cur_new_moon = jd
     next_new_moon_date = jd_to_gregorian(jd)
      
@@ -596,7 +613,7 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     date_info['masam']=month_name
 
     print(date_info)
-    sys.exit(2)
+    return date_info
 
 
 def compute_detailed_info_for_a_given_month(location, date, debug):
@@ -618,9 +635,9 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
     tit = tithi(jd, place)[0]
     critical = sunrise(jd, place)[0]  # - tz/24 ?
     last_new_moon = new_moon(critical, tit, -1)
-    next_new_moon = new_moon(critical, tit, +1)
+    #next_new_moon = new_moon(critical, tit, +1)
     last_new_moon_date=jd_to_gregorian(last_new_moon)
-    next_new_moon_date=jd_to_gregorian(next_new_moon)
+    #next_new_moon_date=jd_to_gregorian(next_new_moon)
 
     #print("{last_new_moon: %s}"  %(format_date(last_new_moon_date)))
     #print("{next_new_moon: %s}"  %(format_date(next_new_moon_date)))
@@ -632,7 +649,7 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
     i_start_month=last_new_moon_date[1]
     i_start_year=last_new_moon_date[0]
  
-    total_month = []
+    #total_month = []
     sukla_list = []
     krishna_list = []
     ti = 'None'
@@ -643,25 +660,21 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
     start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
     month_info['start_date']=start_date
     month_info['month_name']='None'
-    cur_month = 'None'
-    #while ti != 'Amavasya' and cur_month == month_info['month_name']:
-    #TBD a possible bug is when last tithi is not amavasa due to shorter durations of thitis ... need a fix
-    while ti != 'Amavasya' and i < 32:
+
+    #iterate till u find Amavasya in current month
+    while not 'Amavasya' in ti:
          start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
          try:
              datetime.strptime(start_date,date_format)
              #print("Given a good day %s" %(start_date))
              date_info = compute_detailed_info_for_a_given_day(location, start_date, 0)
-
-             if date_info['tithi'] == 'Purnima':
+             if 'Purnima' in date_info['tithi']:
                  month_info['purnami']=start_date
                  month_info['month_name']=date_info['masam']
-             if date_info['tithi'] == 'Amavasya':
+             if 'Amavasya' in date_info['tithi']:
                  month_info['amavasya']=start_date
-             if date_info['tithi'] == 'Krishna paksa prathama':
+             if 'Krishna paksa prathama' in date_info['tithi']:
                  start_krishna_paksha=1
-
-             #cur_month = date_info['masam']
 
              #Switch between Krishna and Sukla Pakshas
              if start_krishna_paksha == 1: 
@@ -671,13 +684,13 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
 
              i_start_day=i_start_day + 1
              #cross check if next day is also a Amavasya day or not!!
-             if date_info['tithi'] == 'Amavasya':
+             if 'Amavasya' in date_info['tithi']:
                 start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
                 try:
                    datetime.strptime(start_date,date_format)
                    #print("Given a good day %s" %(start_date))
                    date_info = compute_detailed_info_for_a_given_day(location, start_date, 0)
-                   if date_info['tithi'] == 'Amavasya':
+                   if 'Amavasya' in date_info['tithi']:
                       krishna_list.append(date_info)
                    else:
                        date_info['tithi'] = 'Amavasya' # assign amavasya so that code will break
@@ -690,7 +703,7 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
              #print("Given a bad day %s, change the month and check" %(start_date))
              i_start_day=1
              if i_start_month >= 12:
-                i_start_month=1;
+                i_start_month=1
                 i_start_year=last_new_moon_date[0]+1
              else:
                 i_start_month=last_new_moon_date[1]+1
@@ -706,7 +719,7 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
 
     month_info['end_date']=start_date
 
-    rVal['monthInfo'] = month_info;
+    rVal['monthInfo'] = month_info
     
     if debug:
         print("Month Details:")
@@ -750,8 +763,8 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     tithis = sktnames["tithis"]
     nakshatras = sktnames["nakshatras"]
     vaaras = sktnames["varas"]
-    yogas = sktnames["yogas"]
-    karanas = sktnames["karanas"]
+    #yogas = sktnames["yogas"]
+    #karanas = sktnames["karanas"]
     masas = sktnames["masas"]
     samvats = sktnames["samvats"]
     ritus = sktnames["ritus"]  
@@ -764,15 +777,15 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     place = Place( location['latitude'], location['longitude'], tzoffset) 
     ti = tithi(jd, place)
     nak = nakshatra(jd, place)
-    yog = yoga(jd, place)
+    #yog = yoga(jd, place)
     mas = masa(jd, place)
     rtu = ritu(mas[0])
-    kar = karana(jd, place)
+    #kar = karana(jd, place)
     vara = vaara(jd)
     srise = sunrise(jd, place)[1]
     sset = sunset(jd, place)[1]
-    kday = ahargana(jd)
-    kyear, sakayr = elapsed_year(jd, mas[0])
+    #kday = ahargana(jd)
+    #kyear, sakayr = elapsed_year(jd, mas[0])
     samvat = samvatsara(jd, mas[0])
     day_dur = day_duration(jd, place)[1]
     mrise = moonrise(jd, place)
@@ -887,7 +900,7 @@ def find_given_location_from_static_db(locationName):
     # open all cities json files and parse all cities data
     fp = open("cities.json")
     cities = json.load(fp)
-    all_cities = cities.keys()
+    #all_cities = cities.keys()
     fp.close()
     try:
        location=cities[str(locationName)]
@@ -1025,7 +1038,7 @@ if __name__ == "__main__":
                 print("Invalid input value (%s) for -m option, provide in range 1-12." %(given_masam))
                 print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
 
-            compute_next_gegorian_date_of_give_hindu_data(location, date, given_tithi, given_masam, verbose)
+            computedDict = compute_next_gegorian_date_of_give_hindu_data(location, date, given_tithi, given_masam, verbose)
             sys.exit(2)
 
         computedDict = compute_detailed_info_for_given_dates(location, date, extra_option, verbose)
