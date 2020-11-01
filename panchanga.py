@@ -42,28 +42,73 @@ from datetime import datetime
 Date = struct('Date', ['year', 'month', 'day'])
 Place = struct('Location', ['latitude', 'longitude', 'timezone'])
 
+commands_available = {
+        "GET_ALL_NAKSHATRA", 
+        "GET_ALL_TITHI", 
+        "GET_ALL_MASAM", 
+        "GET_ALL_ADHIKA_MASAM", 
+        "GET_ALL_HINDU_YEARS", 
+        "GET_ALL_HINDU_YOGA", 
+        "GET_ALL_HINDU_RITUS", 
+        "GET_ALL_HINDU_VARAS" , 
+        "GET_ALL_HINDU_KARANAS",
+        "GET_ALL_HASH_TABLES",
+        "GET_NEXT_HINDU_DATE", 
+        "GET_PANCHANGA_YEAR",
+        "GET_PANCHANGA_MONTH",
+        "GET_PANCHANGA_DAY",
+        "GET_PANCHANGA_AND_FIND_NEXT_EVENT"
+        }
+
 SUB_C_E_USAGE_STR    = "Couldn't find proper input value for -e option, provide either m or y."
 SUB_C_IM_USAGE_STR   = "option -i requires tithis in range 1-30 and -m requires months in range 1-12"
 SUB_C_D_USAGE_STR    = "option (-d) requires proper date in DD-MM-YYYY format"
 SUB_C_L_USAGE_STR    = "option (-l) requires proper location name, please get proper location using -L option"
-MAIN_OPT_AL_USE_STR  =  "python3 panchanga.py -L [location name] [-v]"
-MAIN_OPT_AC_USE_STR  =  "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY [-e [m|y]] [-v]"
-MAIN_OPT_AC_USE_STR1 =  "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY -i <1-30>  -m <1-12> [-v]"
-MAIN_OPT_C_USAGE_STR =  "option(-C) requires date in -d DD-MM-YYYY and [ [-l location name] or [-x latitude, -y longitude -t timezone]] [-e [m|y]]"
-MAIN_OPT_L_USAGE_STR =  "option(-L) displays list of all predefined locations,  -v to display latitude, longitude locations and timezone"
-MAIN_OPT_USAGE_GUIDE =  "Examples:"
-MAIN_OPT_USAGE_EX1   =  "python3 panchanga.py -L                            # lists currently available locations"
-MAIN_OPT_USAGE_EX2   =  "python3 panchanga.py -L Tirupati                   # Is Tirupati part of current available list"
-MAIN_OPT_USAGE_EX2   =  "python3 panchanga.py -L Tirupati -v                # if Tirupati is part of availabe list, then display its latitude and logitude"
-MAIN_OPT_USAGE_EX3   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020  # Displays Tirupati's detailed panchang info of given date"
-MAIN_OPT_USAGE_EX4   =  "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020  # Displays given location's detailed panchang info of given date"
-MAIN_OPT_USAGE_EX5   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  # Displays Tirupati's detailed panchang info of given telugu month"
-MAIN_OPT_USAGE_EX6   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year"
-MAIN_OPT_USAGE_EX7   =  "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates"
-MAIN_OPT_USAGE_EX8   =  "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020 -i 5 -m 10  # Displays given location's detailed panchang info of given tithi and masam"
+SUB_FILE_USAGE_STR   = "Provide a valid json file with all necessary arguments"
+SUB_CMD_USAGE_STR    = """ Avilable Commands:
+                          "GET_ALL_NAKSHATRA"
+                          "GET_ALL_TITHI"
+                          "GET_ALL_MASAM"
+                          "GET_ALL_ADHIKA_MASAM"
+                          "GET_ALL_HINDU_YEARS"
+                          "GET_ALL_HINDU_YOGA"
+                          "GET_ALL_HINDU_RITUS"
+                          "GET_ALL_HINDU_VARAS"
+                          "GET_ALL_HINDU_KARANS" 
+                          "GET_ALL_HASH_TABLES",
+                          "GET_NEXT_HINDU_DATE"
+                          "GET_PANCHANGA_YEAR"
+                          "GET_PANCHANGA_MONTH"
+                          "GET_PANCHANGA_DAY"
+                          "GET_PANCHANGA_AND_FIND_NEXT_EVENT"
+                          """
+SUB_LOC_USAGE_STR    = "Provide a proper location, in format City,State, ex: Hyderabad, Telangana or " + "\n" + "latitude, longitude format, i.e 'longitude':'13.650'  'latitude':'79.41667' "
+SUB_TZ_USAGE_STR     = "Provide a proper timezone, in format Continent/Country ex: Aisa/Kolkata"
+SUB_DAT_USAGE_STR    = "Provide a proper date, in format DD-MM-YYYY format ex: 16-Nov-1983 should be represented as 16-11-1983"
+SUB_TIT_USAGE_STR    = "Provide a proper Tithi, in format 1-30, 1 Sukla Pakasha Padhyami and 30 is Krishna Paksha Amavasya"
+SUB_MAS_USAGE_STR    = "Provide a proper Masam, in format 1-12, 1 being Chaitra masam and 12 being Phalguna masam"
+SUB_TAR_USAGE_STR    = "Provide a proper Target Year, in format YYYY, ex: 2020, 1983, 1955 etc"
+SUB_HASH_USE_STR     = "Provide table names, valid tables are tithis, nakshatras, varas, yogas, karanas, masas, smasas adhikamasas, samvats, ritus"
+
+MAIN_OPT_AL_USE_STR  = "python3 panchanga.py -L [location name] [-v]"
+MAIN_OPT_AC_USE_STR  = "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY [-e [m|y]] [-v]"
+MAIN_OPT_AC_USE_STR1 = "python3 panchanga.py -C [-l location name] | [-x latitude, -y longitude -t timezone] -d DD-MM-YYYY -i <1-30>  -m <1-12> [-v]"
+MAIN_OPT_C_USAGE_STR = "option(-C) requires date in -d DD-MM-YYYY and [ [-l location name] or [-x latitude, -y longitude -t timezone]] [-e [m|y]]"
+MAIN_OPT_L_USAGE_STR = "option(-L) displays list of all predefined locations,  -v to display latitude, longitude locations and timezone"
+MAIN_OPT_USAGE_GUIDE = "Examples:"
+MAIN_OPT_USAGE_EX1   = "python3 panchanga.py -L                            # lists currently available locations"
+MAIN_OPT_USAGE_EX2   = "python3 panchanga.py -L Tirupati                   # Is Tirupati part of current available list"
+MAIN_OPT_USAGE_EX2   = "python3 panchanga.py -L Tirupati -v                # if Tirupati is part of availabe list, then display its latitude and logitude"
+MAIN_OPT_USAGE_EX3   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020  # Displays Tirupati's detailed panchang info of given date"
+MAIN_OPT_USAGE_EX4   = "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020  # Displays given location's detailed panchang info of given date"
+MAIN_OPT_USAGE_EX5   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  # Displays Tirupati's detailed panchang info of given telugu month"
+MAIN_OPT_USAGE_EX6   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year"
+MAIN_OPT_USAGE_EX7   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates"
+MAIN_OPT_USAGE_EX8   = "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020 -i 5 -m 10  # Displays given location's detailed panchang info of given tithi and masam"
+MAIN_OPT_USAGE_EX9   = "python3 panchanga.py -f  <file>.json               # Based on json file contents result are displayed"
 
 MAIN_OPT_ALL_USE_STR = MAIN_OPT_AL_USE_STR + "\n" + MAIN_OPT_AC_USE_STR + "\n" +  MAIN_OPT_AC_USE_STR1
-MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7 + "\n" + MAIN_OPT_USAGE_EX8
+MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7 + "\n" + MAIN_OPT_USAGE_EX8 + "\n" +  MAIN_OPT_USAGE_EX9
 MAIN_USAGE_STR = MAIN_OPT_ALL_USE_STR + "\n" + MAIN_OPT_USAGE_GUIDE + "\n" + MAIN_OPT_USAGE_EXM
 
 format_time = lambda t: "%02d:%02d:%02d" % (t[0], t[1], t[2])
@@ -417,8 +462,8 @@ def format_name_hms(nhms, lookup):
     name_txt = lookup[str(nhms[0])]
     time_txt = format_time(nhms[1])
     if len(nhms) == 4:
-        name_txt += "\n" + lookup[str(nhms[2])]
-        time_txt += "\n" + format_time(nhms[3])
+        name_txt += "," + lookup[str(nhms[2])]
+        time_txt += "," + format_time(nhms[3])
 
     return  name_txt, time_txt
 
@@ -445,7 +490,7 @@ def compute_detailed_info_for_given_dates(location, date, extra_option, debug):
 def compute_detailed_info_for_a_given_year(location, date, debug):
 
     if debug:
-        print("Given date (%s)" %(date))
+        print("compute_detailed_info_for_a_given_year:: Given date (%s)" %(date))
     (dd,mm,yyyy) = date.split('-')
     i_dd=int(dd)
     i_mm=int(mm)
@@ -537,7 +582,7 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     cur_new_moon = jd
     next_new_moon_date = jd_to_gregorian(jd)
      
-    while masam_given != masam:
+    while masam_given != masam :
       tit = tithi(jd, place)[0]
       critical = sunrise(jd, place)[0]
       next_new_moon = new_moon(critical, tit, +1)
@@ -558,15 +603,44 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
 
     cur_date = jd_to_gregorian(jd)
     tit = tithi(jd, place)[0]
-    # it is observed that if gievn tithi is amavasya, then below logic is priting last month's amavasa instead of cur month
-    if tit == 30: tit = 1
+    i_start_day = cur_date[2]
+    i_start_month = cur_date[1]
+    i_start_year = cur_date[0]
+    if debug:
+        print("{start_tithi: %s  %s %d %d %d}"  %(format_date(cur_date), jd, masam, masam_given, tithi_given))
+ 
+    date_format="%d-%m-%Y"
+    # it is observed that if given tithi is amavasya, then below logic is priting last month's amavasa instead of cur month
+    if tit == 30: tit = 0
     while tithi_given != tit:
-      jd = jd + 1
-      tit = tithi(jd, place)[0]
-      cur_date = jd_to_gregorian(jd)
-      if debug:
-        print("{cur_tithi: %s  %s %d %d %d %d}"  %(format_date(cur_date), jd, masam, masam_given, tithi_given, tit))
-      if tit > 30: tit = (tit % 30)
+        i_start_day=i_start_day + 1
+        start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
+        try:
+            datetime.strptime(start_date,date_format)
+            if debug:
+                print("Given a good day %s" %(start_date))
+            jd = gregorian_to_jd(Date(i_start_year, i_start_month, i_start_day))
+            #jd = jd + 1 #increment a day by 1
+            tit = tithi(jd, place)[0]
+            cur_date = jd_to_gregorian(jd)
+            if debug:
+                print("{cur_tithi: %s  %s %d %d %d %d}"  %(format_date(cur_date), jd, masam, masam_given, tithi_given, tit))
+            if tit > 30: tit = (tit % 30)
+
+        except:
+            if debug:
+                print("Given a bad day %s, change the month and check" %(start_date))
+            i_start_day=0
+            if i_start_month >= 12:
+                i_start_month=1
+                i_start_year=cur_date[0]+1
+                if debug:
+                    print("reste month to 1 and move to next year %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
+            else:
+                #i_start_month=last_new_moon_date[1]+1
+                i_start_month=i_start_month+1
+                if debug:
+                    print("move to next month and test %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
 
     # open all names which are needed so that can display in str
     fp = open("sanskrit_en_names.json")
@@ -612,14 +686,27 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
       print("{Masam: %s}" % (month_name))
     date_info['masam']=month_name
 
-    print(date_info)
+    if debug == 1:
+        print(json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=False, indent=4))
     return date_info
+
+def read_from_list (input_list, lookup, debug):
+    output = 'None'
+    if debug :
+        print ("List contents:%s len:%d lookup:%s" % (input_list, len(input_list), lookup))
+    if len(input_list) != 0:
+        output = input_list[0][lookup]
+    if len(input_list) == 2:
+        output = output + ", " + input_list[1][lookup]
+    if debug:
+        print ("%s contents are %s" % (lookup, output))
+    return output
 
 
 def compute_detailed_info_for_a_given_month(location, date, debug):
     rVal = {}
     if debug:
-        print("Given date (%s)" %(date))
+        print("compute_detailed_info_for_a_given_month:: Given date (%s)" %(date))
     (dd,mm,yyyy) = date.split('-')
     i_dd=int(dd)
     i_mm=int(mm)
@@ -666,14 +753,19 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
          start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
          try:
              datetime.strptime(start_date,date_format)
-             #print("Given a good day %s" %(start_date))
-             date_info = compute_detailed_info_for_a_given_day(location, start_date, 0)
-             if 'Purnima' in date_info['tithi']:
+             if debug:
+                print("Given a good day %s" %(start_date))
+             date_info = compute_detailed_info_for_a_given_day(location, start_date, debug)
+
+             ti_list=date_info['tithi']
+             ti = read_from_list (ti_list, 'tithi', debug)
+             if 'Purnima' in ti :
                  month_info['purnami']=start_date
-                 month_info['month_name']=date_info['masam']
-             if 'Amavasya' in date_info['tithi']:
+                 masam_dict = date_info['masam']
+                 month_info['month_name']=masam_dict['masam']
+             if 'Amavasya' in ti :
                  month_info['amavasya']=start_date
-             if 'Krishna paksa prathama' in date_info['tithi']:
+             if 'Krishna paksa prathama' in ti :
                  start_krishna_paksha=1
 
              #Switch between Krishna and Sukla Pakshas
@@ -684,13 +776,16 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
 
              i_start_day=i_start_day + 1
              #cross check if next day is also a Amavasya day or not!!
-             if 'Amavasya' in date_info['tithi']:
+             if 'Amavasya' in ti:
                 start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
                 try:
                    datetime.strptime(start_date,date_format)
-                   #print("Given a good day %s" %(start_date))
-                   date_info = compute_detailed_info_for_a_given_day(location, start_date, 0)
-                   if 'Amavasya' in date_info['tithi']:
+                   if debug:
+                        print("Given a good day %s" %(start_date))
+                   date_info = compute_detailed_info_for_a_given_day(location, start_date, debug)
+                   ti_list=date_info['tithi']
+                   ti = read_from_list (ti_list, 'tithi', debug)
+                   if 'Amavasya' in ti:
                       krishna_list.append(date_info)
                    else:
                        date_info['tithi'] = 'Amavasya' # assign amavasya so that code will break
@@ -699,18 +794,24 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
                   i_start_day=i_start_day - 1
                   start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
          except:
-             #print_err_and_exit(parser, "option (-d) requires proper date in DD-MM-YYYY format")
-             #print("Given a bad day %s, change the month and check" %(start_date))
+             if debug:
+                print("Given a bad day %s, change the month and check" %(start_date))
              i_start_day=1
              if i_start_month >= 12:
                 i_start_month=1
                 i_start_year=last_new_moon_date[0]+1
+                if debug:
+                    print("reste month to 1 and move to next year %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
              else:
-                i_start_month=last_new_moon_date[1]+1
+                #i_start_month=last_new_moon_date[1]+1
+                i_start_month=i_start_month+1
+                if debug:
+                    print("move to next month and test %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
 
          # update the thithi so that code can exit smoothly
          try:
-            ti=date_info['tithi']
+            ti_list = date_info['tithi']
+            ti = read_from_list (ti_list, 'tithi', debug)
          except:
             ti='Amavasya'
 
@@ -723,26 +824,15 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
     
     if debug:
         print("Month Details:")
-    #total_month.append(month_info)
-    #print(month_info) 
     
     if debug:
         print("Sukla Paksha Thithis:")
     rVal['suklaPaksham'] = sukla_list
-    #print(sukla_list) 
-    #for p in sukla_list:
-    #    #print (p)
-    #    total_month.append(p)
 
     if debug:
         print("Krishna Paksha Thithis:")
     rVal['krishnaPaksham'] = krishna_list
-    #print(krishna_list) 
-    #for p in krishna_list:
-    #    total_month.append(p)
-    #    #print (p)
 
-    #x = json.dumps(total_month)
     return rVal
 
 def compute_detailed_info_for_a_given_day(location, date, debug):
@@ -763,8 +853,8 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     tithis = sktnames["tithis"]
     nakshatras = sktnames["nakshatras"]
     vaaras = sktnames["varas"]
-    #yogas = sktnames["yogas"]
-    #karanas = sktnames["karanas"]
+    yogas = sktnames["yogas"]
+    karanas = sktnames["karanas"]
     masas = sktnames["masas"]
     samvats = sktnames["samvats"]
     ritus = sktnames["ritus"]  
@@ -777,15 +867,15 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     place = Place( location['latitude'], location['longitude'], tzoffset) 
     ti = tithi(jd, place)
     nak = nakshatra(jd, place)
-    #yog = yoga(jd, place)
+    yog = yoga(jd, place)
     mas = masa(jd, place)
     rtu = ritu(mas[0])
-    #kar = karana(jd, place)
+    kar = karana(jd, place)
     vara = vaara(jd)
     srise = sunrise(jd, place)[1]
     sset = sunset(jd, place)[1]
-    #kday = ahargana(jd)
-    #kyear, sakayr = elapsed_year(jd, mas[0])
+    kday = ahargana(jd)
+    kyear, sakayr = elapsed_year(jd, mas[0])
     samvat = samvatsara(jd, mas[0])
     day_dur = day_duration(jd, place)[1]
     mrise = moonrise(jd, place)
@@ -795,9 +885,9 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
 
     date_info['gregorian_date']=date
 
-    #if debug == 1:
-    #  print("{\n{Karanam: %s}" %str(kar[0]))
-    #date_info['karanam']=str(kar[0])
+    if debug == 1:
+      print("{\n{Karanam: %s}" %str(kar[0]))
+    date_info['karanam']=str(kar[0])
 
     if debug == 1:
       print("{Varam:  %s}" % vaaras[str(vara)])
@@ -818,17 +908,51 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
       print("{MoonSet: %s}" % format_time(mset))
     date_info['mset']=format_time(mset)
 
+    tithi_list = []
+    tithi_obj = dict()
     name, hms = format_name_hms(ti, tithis)
     if debug == 1:
       print("{Thiti: %s %s}" % (name,hms))
-    date_info['tithi']=name
-    date_info['tithi_time']=hms
+    tithi_obj["tithi"]=tithis[str(ti[0])]
+    tithi_obj['tithi_time']=format_time(ti[1])
+    tithi_obj["tithi_id"]=ti[0]
+    tithi_list.append(tithi_obj)
+    if len(ti) == 4:
+        tithi_obj["tithi"]=tithis[str(ti[2])]
+        tithi_obj['tithi_time']=format_time(ti[3])
+        tithi_obj["tithi_id"]=ti[2]
+        tithi_list.append(tithi_obj)
+    date_info['tithi']=tithi_list
 
+    nak_list = []
+    nak_obj = dict()
     name, hms = format_name_hms(nak, nakshatras)
     if debug == 1:
       print("{Nakshatra: %s %s}" % (name, hms))
-    date_info['nakshatra']=name
-    date_info['nakshatra_time']=hms
+    nak_obj['nakshatra']=nakshatras[str(nak[0])]
+    nak_obj['nakshatra_time']=format_time(nak[1])
+    nak_obj['nakshatra_id']=nak[0]
+    nak_list.append(nak_obj)
+    if len(nak) == 4:
+        nak_obj['nakshatra']=nakshatras[str(nak[2])]
+        nak_obj['nakshatra_time']=format_time(nak[3])
+        nak_obj['nakshatra_id']=nak[2]
+        nak_list.append(nak_obj)
+    date_info['nakshatra']=nak_list
+
+    # Next update the complex ones
+    masam_obj = dict()
+    month_name = masas[str(mas[0])]
+    is_leap = mas[1]
+    if is_leap:  month_name = "Adhika " + month_name.lower()
+    month_name = month_name + " masa"
+    if debug == 1:
+      print("{Masam: %s}" % (month_name))
+    masam_obj['masam']=month_name
+    masam_obj['masam_id']=mas[0]
+    masam_obj['is_leap_masa']=mas[1]
+    date_info['masam']=masam_obj
+
     if debug == 1:
       print("{Telugu Samvasaram: %s samvatsara}" % (samvats[str(samvat)]))
     date_info['samvasaram']=samvats[str(samvat)]
@@ -836,35 +960,27 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
       print("{Day Duration: %s}" % format_time(day_dur))
     date_info['day_duration']=format_time(day_dur)
 
-    # Next update the complex ones
-    month_name = masas[str(mas[0])]
-    is_leap = mas[1]
-    if is_leap:  month_name = "Adhika " + month_name.lower()
-    month_name = month_name + " masa"
-    if debug == 1:
-      print("{Masam: %s}" % (month_name))
-    date_info['masam']=month_name
     if debug == 1:
       print("{Ruthuvu: %s ṛtu}" % (ritus[str(rtu)]))
     date_info['ruthuvu']=ritus[str(rtu)]
 
-    ##Use it when needed, as of now this data is not used
-    #name, hms = format_name_hms(yog, yogas)
-    #if debug == 1:
-    #  print("{Yuga: %s}" % (name))
-    #date_info['yuga']=name
-    #if debug == 1:
-    #  print("{GataKali: %d}" % (kyear))
-    #date_info['gataKali']=kyear
-    #if debug == 1:
-    #  print("{KaliDay: %d}" % (kday))
-    #date_info['kaliday']=kday
-    #if debug == 1:
-    #  print("{Skayra: %s}" % (sakayr))
-    #date_info['skayra']=sakayr
-    #if debug == 1:
-    #  print("{Śālivāhana śaka: %d}\n}" % (sakayr))
-    #date_info['salivahana_saka']=sakayr
+    ##Extra data for advanced users 
+    name, hms = format_name_hms(yog, yogas)
+    if debug == 1:
+      print("{Yoga: %s}" % (name))
+    date_info['yoga']=name
+    if debug == 1:
+      print("{GataKali: %d}" % (kyear))
+    date_info['gataKali']=kyear
+    if debug == 1:
+      print("{KaliDay: %d}" % (kday))
+    date_info['kaliday']=kday
+    if debug == 1:
+      print("{Skayra: %s}" % (sakayr))
+    date_info['skayra']=sakayr
+    if debug == 1:
+      print("{Salivahana Saka: %d}\n}" % (sakayr))
+    date_info['salivahana_saka']=sakayr
 
     return date_info
 
@@ -896,6 +1012,35 @@ def list_location(locationName, verbose):
            print (i)
     #print(all_cities)
 
+def generic_commands (command, debug):
+    if debug:
+        print ("Command: %s debug:%d" % (command, debug))
+    if command == "GET_ALL_NAKSHATRA":
+       ret_value = display_hashvalues('nakshatras', debug)
+    elif command == "GET_ALL_TITHI":
+       ret_value = display_hashvalues('tithis', debug)
+    elif command == "GET_ALL_MASAM":
+       ret_value = display_hashvalues('masas', debug)
+    elif command == "GET_ALL_ADHIKA_MASAM":
+       ret_value = display_hashvalues('adhikamasas', debug)
+    elif command == "GET_ALL_HINDU_YEARS":
+       ret_value = display_hashvalues('samvats', debug)
+    elif command == "GET_ALL_HINDU_YOGA":
+       ret_value = display_hashvalues('yogas', debug)
+    elif command == "GET_ALL_HINDU_RITUS":
+       ret_value = display_hashvalues('ritus', debug)
+    elif command == "GET_ALL_HINDU_VARAS":
+       ret_value = display_hashvalues('varas', debug)
+    elif command == "GET_ALL_HINDU_KARANAS":
+       ret_value = display_hashvalues('karanas', debug)
+    elif command == "GET_ALL_HASH_TABLES":
+       fp = open("sanskrit_en_names.json")
+       ret_value = json.load(fp)
+       fp.close()
+    else:
+       ret_value = 'None'
+    return ret_value
+
 def find_given_location_from_static_db(locationName):
     # open all cities json files and parse all cities data
     fp = open("cities.json")
@@ -909,10 +1054,265 @@ def find_given_location_from_static_db(locationName):
        print_err_and_exit(parser, SUB_C_L_USAGE_STR)
     return location
 
+def display_hashvalues(tablename, debug):
+    # open all names which are needed so that can display in str
+    fp = open("sanskrit_en_names.json")
+    sktnames = json.load(fp)
+    fp.close()
+
+    try:
+        hashtable = sktnames[tablename]
+        #print(json.dumps(hashtable, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+        if debug:
+            print ("TableName: %s debug:%d" % (tablename, debug))
+        return hashtable
+    except:
+        print("Invalid %s table, Provide a valid table name." % (tablename))
+        print_err_and_exit(parser, SUB_HASH_USE_STR)
+
+def read_input_arguments_from_json_file (filename):
+    debug = 0
+    # open input arguments json file and parse all arguments 
+    try:
+        fp = open(filename)
+        inputargs = json.load(fp)
+        fp.close()
+        return inputargs
+    except:
+        print("Provide a valid input json file.")
+        print_err_and_exit(parser, SUB_FILE_USAGE_STR)
+
+def parse_input_arguments_from_json_object (inputargs):
+    location = dict()
+
+    #read vwrbose which needs to be used for debugging, otherwise disable it
+    try:
+        debug=int(inputargs["verbose"])
+    except:
+        debug = 0
+ 
+    #read command which needs to be executed, otherwise exit with error
+    try:
+       command=inputargs["command"]
+       found_cmd = 0
+       for cmd in commands_available:
+           if debug:
+                print ("CMD: %s " %cmd)
+           if cmd == command:
+               found_cmd = 1
+               break
+       if found_cmd == 0:
+           print ("Invalid input command: %s" % command)
+           print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+       ret_value = generic_commands (command, debug)
+       if ret_value != 'None':
+            print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+            return
+    except:
+       print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+
+    #read location for which panchange needs to be computed, otherwise exit with error
+    try:
+        loc = inputargs["location"]
+    except:       
+        print_err_and_exit(parser, SUB_LOC_USAGE_STR)
+
+    try:
+        location['latitude'] = float(loc["latitude"])
+        location['longitude'] = float(loc["longitude"])
+        #read timezone for which panchange needs to be computed, otherwise exit with error
+        try:
+            location['timezone'] = loc["timezone"]
+        except:
+            print_err_and_exit(parser, SUB_TZ_USAGE_STR)
+    except:       
+        try:
+            locationName=loc["place"]
+            location = find_given_location_from_static_db(locationName)
+            if verbose:
+                print("Location Details: %s %s" %(locationName, location))
+        except:
+            print_err_and_exit(parser, SUB_LOC_USAGE_STR)
+
+    #read date for which panchange needs to be computed, otherwise exit with error
+    try:
+       date=inputargs["date"]
+       date_format="%d-%m-%Y"
+       datetime.strptime(date,date_format)
+    except:
+       print_err_and_exit(parser, SUB_DAT_USAGE_STR)
+
+    ret_value = dict()
+    #read date for which panchange needs to be computed, otherwise exit with error
+    if command == "GET_PANCHANGA_DAY":
+       ret_value = compute_detailed_info_for_a_given_day(location, date, debug)
+    elif command == "GET_PANCHANGA_MONTH":
+       ret_value = compute_detailed_info_for_a_given_month(location, date, debug)
+    elif command == "GET_PANCHANGA_YEAR":
+       ret_value = compute_detailed_info_for_a_given_year(location, date, debug)
+    elif command == "GET_NEXT_HINDU_DATE":
+        try:
+            int_tithi=int(inputargs["tithi"])
+        except:
+            print_err_and_exit(parser, SUB_TIT_USAGE_STR)
+        try:
+            int_masam=int(inputargs["masam"])
+        except:
+            print_err_and_exit(parser, SUB_MAS_USAGE_STR)
+        if int_tithi < 1 or int_tithi > 30:
+            print("Invalid input value (%d) for -i option, provide in range 1-30." %(int_tithi))
+            print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+        if int_masam < 1 or int_masam > 12:
+            print("Invalid input value (%d) for -m option, provide in range 1-12." %(int_masam))
+            print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+        ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
+    elif command == "GET_PANCHANGA_AND_FIND_NEXT_EVENT":
+        try:
+            int_target_year=int(inputargs["target_year"])
+            target_date=format_date(Date(int_target_year, 1, 1)) #start from JAN 1 st of target year
+        except:
+            print_err_and_exit(parser, SUB_TAR_USAGE_STR)
+
+        old_date_info = compute_detailed_info_for_a_given_day(location, date, debug)
+        ti_list = old_date_info['tithi']
+        ti = read_from_list (ti_list, 'tithi_id', debug)
+        int_tithi = int(ti)
+        masam_dict = dict()
+        masam_dict = old_date_info['masam']
+        int_masam = int(masam_dict['masam_id'])
+        ret_value = compute_next_gegorian_date_of_give_hindu_data(location, target_date, int_tithi, int_masam, debug)
+    #if no proper command found then throw error
+    else :
+       print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+
+    print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+    sys.exit(2)
+
+
+def read_input_arguments_from_command_line_arguments (options, args, verbose):
+    extra_option='None'
+    json_obj = dict()
+    loc_obj  = dict()
+    #no argumemts given, throw error
+    if not args:
+        print_err_and_exit(parser, MAIN_USAGE_STR)
+    else:
+        if verbose:
+            print ("Input Variables :%s"  % args)
+            json_obj['verbose'] = verbose
+
+        if options.calculate_calander:
+            json_obj['command'] = args[0]
+
+            found_cmd = 0
+            for cmd in commands_available:
+                if verbose:
+                    print ("CMD: %s " %cmd)
+                if cmd == json_obj['command']:
+                    found_cmd = 1
+                    break
+            if found_cmd == 0:
+                print ("Invalid input command: %s" % json_obj['command'])
+                print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+ 
+        #read the location information, which is mandatory parameter for calculating detailed info 
+        #if location (-l) is given then use it
+        if options.location_given:
+            loc_obj['place'] = args[1]
+            if verbose:
+                print("Location Details: %s %s" %(args[1]))
+        #if location ( in longitude, latitude, timzeone ) is given then use it
+        elif options.longitude_given and options.latitude_given and options.timezone_given :
+            loc_obj['latitude']  = (args[1])
+            loc_obj['longitude'] = (args[2])
+            loc_obj['timezone'] =  args[3]
+            if verbose:
+                print("Location Details: %s" %(loc_obj))
+        #if not then it is an error 
+        else :
+            print("Location not specified, please provide correct location.")
+            print_err_and_exit(parser, MAIN_OPT_C_USAGE_STR)
+
+        json_obj['location'] = loc_obj 
+
+        #read the date which is mandatory parameter for calculating detailed info 
+        if options.date_given:
+            if options.longitude_given and options.latitude_given and options.timezone_given :
+                json_obj['date']=args[4]
+            else:
+                json_obj['date']=args[2]
+       #read the extra optional paramter (-e), which will tell whether to display monthy or yearly info
+        if options.extra_given:
+            if not options.date_given:
+                print_err_and_exit(parser, "Date (-d) is mandatory parameter for -e option" + "\n" + MAIN_USAGE_STR)
+            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
+                try :
+                    extra_option=args[5]
+                    json_obj['extra']=args[5]
+                except:
+                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            elif options.date_given and options.location_given:
+                try :
+                    extra_option=args[3]
+                    json_obj['extra']=args[3]
+                except:
+                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            else:
+                print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+
+            #curently supporting monthly or yearly info only
+            if extra_option != 'm' and extra_option != 'y':
+                print("Invalid input value (%s) for -e option, provide either m or y." %(extra_option))
+                print_err_and_exit(parser, MAIN_USAGE_STR)
+
+        #read the tithi and masam given by user and start calculating gregorian date 
+        if options.tithi_given and options.masam_given:
+            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
+                try :
+                    given_tithi=(args[5])
+                    given_masam=(args[6])
+                    json_obj['tithi']=args[5]
+                    json_obj['masam']=args[6]
+                except:
+                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            elif options.date_given and options.location_given:
+                try :
+                    given_tithi=(args[3])
+                    given_masam=(args[4])
+                    json_obj['tithi']=args[3]
+                    json_obj['masam']=args[4]
+                except:
+                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            else:
+                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+
+        elif options.target_year :
+            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
+                try :
+                    target_year=(args[5])
+                    json_obj['target_year']=args[5]
+                except:
+                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            elif options.date_given and options.location_given:
+                try :
+                    target_year=(args[3])
+                    json_obj['target_year']=args[3]
+                except:
+                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            else:
+                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+ 
+        if verbose:
+            print("JSON_OBJ: %s" % json_obj)
+        computedDict = parse_input_arguments_from_json_object(json_obj)
+        print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+        return
+
 def print_err_and_exit(parser, errMsg):
     parser.error(errMsg)
     print(MAIN_USAGE_STR)
     sys.exit(2)
+
 
 if __name__ == "__main__":
 
@@ -921,11 +1321,11 @@ if __name__ == "__main__":
                                        "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY [-e [m|y]] [-v] \n"
                                        "usage: %prog -C -l location -d DD-MM-YYYY -i [1-30] -m [1-13] [-v] \n"
                                        "usage: %prog -C -x longitude -y latitude -t timezone -d DD-MM-YYYY -i tithi -m masam [-v] \n"
-                                       "usage: %prog -L [Location_Name] [-v] \n",
+                                       "usage: %prog -L [Location_Name] [-v] \n" 
+                                       "usage: %prog -f <file_name>.json \n",
                                        version = "%prog 1.0")
-
   parser.add_option("-L", "--list-all-locations", action="store_true", dest="list_all_locations",help="Lists all available locations or Specific location defined by name")
-  parser.add_option("-C", "--calculate-calander", action="store_true", dest="calculate_calander",help="Displays calander for given date")
+  parser.add_option("-C", "--calculate_calander", action="store_true", dest="calculate_calander",help="Calander commands for given date")
   parser.add_option("-v", "--verbose", action="store_true", dest="verbose",help="All functions and commands outputs in verbose mode, used for debugging")
   parser.add_option("-x", "--latitude", action="store_true", dest="latitude_given",help="suboption of -C, should be used along with -y, -t, provide a proper latitude of needed location")
   parser.add_option("-y", "--longitude", action="store_true", dest="longitude_given",help="suboption of -C, should be used along with -x, -t,provide a proper longitude of needed location")
@@ -935,6 +1335,8 @@ if __name__ == "__main__":
   parser.add_option("-e", "--extra_info", action="store_true", dest="extra_given",help="suboption of -C and -d, provide whether u need a months calander[m] or years calander[y]")
   parser.add_option("-i", "--tithi_info", action="store_true", dest="tithi_given",help="suboption of -C and should be used with -l and -m, provide the thiti between and 1 and 30, where 1 is sukla paksha ekadasi and 30 is amavasya")
   parser.add_option("-m", "--masam_info", action="store_true", dest="masam_given",help="suboption of -C and should be used with -l and -i, provide the masam between 1 and 12, where 1 is Caitra and 12 is Phalguna")
+  parser.add_option("-f", "--input_file", action="store_true", dest="input_file_given_in_json",help="instead of all input variables, provide input in a file in json format")
+  parser.add_option("-T", "--target_year", action="store_true", dest="target_year",help="calculate the gregorian date on which event falls in given year")
 
   (options, args) = parser.parse_args()
 
@@ -951,100 +1353,22 @@ if __name__ == "__main__":
     list_location(locationName, verbose)
     sys.exit(2)
  
-  location = dict()
-
-  #calculate detailed panchangam for a given greogorian date and location
-  if options.calculate_calander:
-    extra_option='None'
-    #no argumemts given, throw error
-    if not args:
-        print_err_and_exit(parser, MAIN_USAGE_STR)
-    else:
-        #read the location information, which is mandatory parameter for calculating detailed info 
-        #if location (-l) is given then use it
-        if options.location_given:
-            locationName=args[0]
-            location = find_given_location_from_static_db(locationName)
-            if verbose:
-                print("Location Details: %s %s" %(locationName, location))
-        #if location ( in longitude, latitude, timzeone ) is given then use it
-        elif options.longitude_given and options.latitude_given and options.timezone_given :
-            location['latitude'] = float(args[0])
-            location['longitude'] = float(args[1])
-            location['timezone'] = args[2]
-            if verbose:
-                print("Location Details: %s" %(location))
-        #if not then it is an error 
-        else :
-            print("Location not specified, please provide correct location.")
-            print_err_and_exit(parser, MAIN_OPT_C_USAGE_STR)
-
-        #read the date which is mandatory parameter for calculating detailed info 
-        if options.date_given:
-            if options.longitude_given and options.latitude_given and options.timezone_given :
-                date=args[3]
-            else:
-                date=args[1]
-            date_format="%d-%m-%Y"
-
-            try:
-                datetime.strptime(date,date_format)
-            except:
-                print_err_and_exit(parser, SUB_C_D_USAGE_STR)
-        
-       #read the extra optional paramter (-e), which will tell whether to display monthy or yearly info
-        if options.extra_given:
-            if not options.date_given:
-                print_err_and_exit(parser, "Date (-d) is mandatory parameter for -e option" + "\n" + MAIN_USAGE_STR)
-            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                try :
-                    extra_option=args[4]
-                except:
-                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
-            elif options.date_given and options.location_given:
-                try :
-                    extra_option=args[2]
-                except:
-                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
-            else:
-                print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
-
-            #curently supporting monthly or yearly info only
-            if extra_option != 'm' and extra_option != 'y':
-                print("Invalid input value (%s) for -e option, provide either m or y." %(extra_option))
-                print_err_and_exit(parser, MAIN_USAGE_STR)
-
-        #read the tithi and masam given by user and start calculating gregorian date 
-        if options.tithi_given and options.masam_given:
-            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                try :
-                    given_tithi=int(args[4])
-                    given_masam=int(args[5])
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
-            elif options.date_given and options.location_given:
-                try :
-                    given_tithi=int(args[2])
-                    given_masam=int(args[3])
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
-            else:
-                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
-
-            if given_tithi < 1 or given_tithi > 30:
-                print("Invalid input value (%s) for -i option, provide in range 1-30." %(given_tithi))
-                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
-            if given_masam < 1 or given_masam > 12:
-                print("Invalid input value (%s) for -m option, provide in range 1-12." %(given_masam))
-                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
-
-            computedDict = compute_next_gegorian_date_of_give_hindu_data(location, date, given_tithi, given_masam, verbose)
-            sys.exit(2)
-
-        computedDict = compute_detailed_info_for_given_dates(location, date, extra_option, verbose)
-        #print(json.dumps(computedDict))
-        print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-        sys.exit(2)
-
+  #read input variables from JSON file and calcluate detailed panchangam for a given greogorian date and location
+  if options.input_file_given_in_json:
+    inputargs = dict()
+    input_arguments_file = args[0]
+    if (verbose == 1):
+        print ("Given File name is :%s" %input_arguments_file)
+    inputargs = read_input_arguments_from_json_file (input_arguments_file)
+    parse_input_arguments_from_json_object (inputargs)
+    sys.exit(2)
+  #read input variables from CLI instead of a JSON file and make a JSON object and then 
+  #calcluate detailed panchangam for a given greogorian date and location
+  elif options.calculate_calander:
+    if (verbose == 1):
+        print ("Input Variables :%s"  % args)
+    read_input_arguments_from_command_line_arguments (options, args, verbose)
+    sys.exit(2)
+ 
   print("Usage:\n%s" % (MAIN_USAGE_STR))
   sys.exit(2)

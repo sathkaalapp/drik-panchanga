@@ -13,6 +13,19 @@
            "12":"Phalguna"
          },
 
+"adhikamasas": { "13":"Adhika Caitra",
+           "14":"Adhika Vaisakha",
+           "15":"Adhika Jyestha",
+           "16":"Adhika Asadha",
+           "17":"Adhika Sravana",
+           "18":"Adhika Bhadrapada",
+           "19":"Adhika Asvina",
+           "20":"Adhika Kartika",
+           "21":"Adhika Margasirsa",
+           "22":"Adhika Pusya",
+           "23":"Adhika Magha",
+           "24":"Adhika Phalguna"
+         },
 "tithis": { "1":  "Sukla paksa prathama",
             "2":  "Sukla paksa dvitiya",
             "3":  "Sukla paksa trtiya",
