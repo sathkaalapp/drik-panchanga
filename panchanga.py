@@ -1243,7 +1243,7 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
         if options.location_given:
             loc_obj['place'] = args[1]
             if verbose:
-                print("Location Details: %s %s" %(args[1]))
+                print("Location Details: %s " %(args[1]))
         #if location ( in longitude, latitude, timzeone ) is given then use it
         elif options.longitude_given and options.latitude_given and options.timezone_given :
             loc_obj['latitude']  = (args[1])
