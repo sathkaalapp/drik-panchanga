@@ -1012,6 +1012,35 @@ def list_location(locationName, verbose):
            print (i)
     #print(all_cities)
 
+def is_generic_command (command, debug):
+    if debug:
+        print ("Command: %s debug:%d" % (command, debug))
+    if command == "GET_ALL_NAKSHATRA":
+       return 1
+    elif command == "GET_ALL_TITHI":
+       return 1
+    elif command == "GET_ALL_MASAM":
+       return 1
+    elif command == "GET_ALL_ADHIKA_MASAM":
+       return 1
+    elif command == "GET_ALL_HINDU_YEARS":
+       return 1
+    elif command == "GET_ALL_HINDU_YOGA":
+       return 1
+    elif command == "GET_ALL_HINDU_RITUS":
+       return 1
+    elif command == "GET_ALL_HINDU_VARAS":
+       return 1
+    elif command == "GET_ALL_HINDU_KARANAS":
+       return 1
+    elif command == "GET_ALL_HASH_TABLES":
+       return 1
+    else:
+       return 0
+    return 0
+
+
+
 def generic_commands (command, debug):
     if debug:
         print ("Command: %s debug:%d" % (command, debug))
@@ -1107,11 +1136,11 @@ def parse_input_arguments_from_json_object (inputargs):
     #read command which needs to be executed, otherwise exit with error
     try:
        command=inputargs["command"]
-       if validate_input_command(comamnd, debug):
+       if validate_input_command(command, debug):
           ret_value = generic_commands (command, debug)
           if ret_value != 'None':
-             print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-             return
+             #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+             return ret_value
     except:
        print_err_and_exit(parser, SUB_CMD_USAGE_STR)
 
@@ -1189,8 +1218,9 @@ def parse_input_arguments_from_json_object (inputargs):
     else :
        print_err_and_exit(parser, SUB_CMD_USAGE_STR)
 
-    print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-    sys.exit(2)
+    return ret_value
+    #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+    #sys.exit(2)
 
 
 def read_input_arguments_from_command_line_arguments (options, args, verbose):
@@ -1202,16 +1232,17 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
         print_err_and_exit(parser, MAIN_USAGE_STR)
     else:
         if verbose:
-            print ("Input Variables :%s"  % args)
+            print ("Inside read_input_arguments_from_command_line_arguments pasring verbose :%s"  % args)
             json_obj['verbose'] = verbose
 
         if options.calculate_calander:
             json_obj['command'] = args[0]
+            if verbose:
+                print ("Inside parse_input_arguments_from_json_object: parsing command: %s" % json_obj['command'])
             if validate_input_command(json_obj['command'], verbose):
-                ret_value = generic_commands (json_obj['command'], verbose)
-                if ret_value != 'None':
-                    print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-                    sys.exit(2)
+                if is_generic_command (json_obj['command'], verbose) == 1:
+                    #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+                    return json_obj 
         #read the location information, which is mandatory parameter for calculating detailed info 
         #if location (-l) is given then use it
         if options.location_given:
@@ -1301,9 +1332,7 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
  
         if verbose:
             print("JSON_OBJ: %s" % json_obj)
-        computedDict = parse_input_arguments_from_json_object(json_obj)
-        print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-        return
+        return json_obj
 
 def print_err_and_exit(parser, errMsg):
     parser.error(errMsg)
@@ -1357,14 +1386,17 @@ if __name__ == "__main__":
     if (verbose == 1):
         print ("Given File name is :%s" %input_arguments_file)
     inputargs = read_input_arguments_from_json_file (input_arguments_file)
-    parse_input_arguments_from_json_object (inputargs)
+    computedDict = parse_input_arguments_from_json_object (inputargs)
+    print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
     sys.exit(2)
   #read input variables from CLI instead of a JSON file and make a JSON object and then 
   #calcluate detailed panchangam for a given greogorian date and location
   elif options.calculate_calander:
     if (verbose == 1):
         print ("Input Variables :%s"  % args)
-    read_input_arguments_from_command_line_arguments (options, args, verbose)
+    json_obj = read_input_arguments_from_command_line_arguments (options, args, verbose)
+    computedDict = parse_input_arguments_from_json_object(json_obj)
+    print(json.dumps(computedDict, default=lambda o: o.__dict__, sort_keys=False, indent=4))
     sys.exit(2)
  
   print("Usage:\n%s" % (MAIN_USAGE_STR))
