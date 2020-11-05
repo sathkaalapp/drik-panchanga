@@ -1082,6 +1082,19 @@ def read_input_arguments_from_json_file (filename):
         print("Provide a valid input json file.")
         print_err_and_exit(parser, SUB_FILE_USAGE_STR)
 
+def validate_input_command(command, debug):
+    found_cmd = 0
+    for cmd in commands_available:
+           if debug:
+                print ("CMD: %s " %cmd)
+           if cmd == command:
+               found_cmd = 1
+               break
+    if found_cmd == 0:
+           print ("Invalid input command: %s" % command)
+           print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+    else:  return found_cmd
+
 def parse_input_arguments_from_json_object (inputargs):
     location = dict()
 
@@ -1094,20 +1107,11 @@ def parse_input_arguments_from_json_object (inputargs):
     #read command which needs to be executed, otherwise exit with error
     try:
        command=inputargs["command"]
-       found_cmd = 0
-       for cmd in commands_available:
-           if debug:
-                print ("CMD: %s " %cmd)
-           if cmd == command:
-               found_cmd = 1
-               break
-       if found_cmd == 0:
-           print ("Invalid input command: %s" % command)
-           print_err_and_exit(parser, SUB_CMD_USAGE_STR)
-       ret_value = generic_commands (command, debug)
-       if ret_value != 'None':
-            print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-            return
+       if validate_input_command(comamnd, debug):
+          ret_value = generic_commands (command, debug)
+          if ret_value != 'None':
+             print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+             return
     except:
        print_err_and_exit(parser, SUB_CMD_USAGE_STR)
 
@@ -1203,18 +1207,11 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
 
         if options.calculate_calander:
             json_obj['command'] = args[0]
-
-            found_cmd = 0
-            for cmd in commands_available:
-                if verbose:
-                    print ("CMD: %s " %cmd)
-                if cmd == json_obj['command']:
-                    found_cmd = 1
-                    break
-            if found_cmd == 0:
-                print ("Invalid input command: %s" % json_obj['command'])
-                print_err_and_exit(parser, SUB_CMD_USAGE_STR)
- 
+            if validate_input_command(json_obj['command'], verbose):
+                ret_value = generic_commands (json_obj['command'], verbose)
+                if ret_value != 'None':
+                    print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+                    sys.exit(2)
         #read the location information, which is mandatory parameter for calculating detailed info 
         #if location (-l) is given then use it
         if options.location_given:
