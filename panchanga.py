@@ -686,8 +686,8 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
       print("{Masam: %s}" % (month_name))
     date_info['masam']=month_name
 
-    if debug == 1:
-        print(json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+    #if debug == 1:
+    #    print(json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=False, indent=4))
     return date_info
 
 def read_from_list (input_list, lookup, debug):
@@ -1091,7 +1091,6 @@ def display_hashvalues(tablename, debug):
 
     try:
         hashtable = sktnames[tablename]
-        #print(json.dumps(hashtable, default=lambda o: o.__dict__, sort_keys=False, indent=4))
         if debug:
             print ("TableName: %s debug:%d" % (tablename, debug))
         return hashtable
@@ -1139,7 +1138,6 @@ def parse_input_arguments_from_json_object (inputargs):
        if validate_input_command(command, debug):
           ret_value = generic_commands (command, debug)
           if ret_value != 'None':
-             #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
              return ret_value
     except:
        print_err_and_exit(parser, SUB_CMD_USAGE_STR)
@@ -1219,8 +1217,6 @@ def parse_input_arguments_from_json_object (inputargs):
        print_err_and_exit(parser, SUB_CMD_USAGE_STR)
 
     return ret_value
-    #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
-    #sys.exit(2)
 
 
 def read_input_arguments_from_command_line_arguments (options, args, verbose):
@@ -1241,7 +1237,6 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
                 print ("Inside parse_input_arguments_from_json_object: parsing command: %s" % json_obj['command'])
             if validate_input_command(json_obj['command'], verbose):
                 if is_generic_command (json_obj['command'], verbose) == 1:
-                    #print(json.dumps(ret_value, default=lambda o: o.__dict__, sort_keys=False, indent=4))
                     return json_obj 
         #read the location information, which is mandatory parameter for calculating detailed info 
         #if location (-l) is given then use it
