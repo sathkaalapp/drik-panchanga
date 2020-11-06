@@ -918,10 +918,11 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     tithi_obj["tithi_id"]=ti[0]
     tithi_list.append(tithi_obj)
     if len(ti) == 4:
-        tithi_obj["tithi"]=tithis[str(ti[2])]
-        tithi_obj['tithi_time']=format_time(ti[3])
-        tithi_obj["tithi_id"]=ti[2]
-        tithi_list.append(tithi_obj)
+        tithi_obj1 = dict()
+        tithi_obj1["tithi"]=tithis[str(ti[2])]
+        tithi_obj1['tithi_time']=format_time(ti[3])
+        tithi_obj1["tithi_id"]=ti[2]
+        tithi_list.append(tithi_obj1)
     date_info['tithi']=tithi_list
 
     nak_list = []
@@ -934,10 +935,11 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     nak_obj['nakshatra_id']=nak[0]
     nak_list.append(nak_obj)
     if len(nak) == 4:
-        nak_obj['nakshatra']=nakshatras[str(nak[2])]
-        nak_obj['nakshatra_time']=format_time(nak[3])
-        nak_obj['nakshatra_id']=nak[2]
-        nak_list.append(nak_obj)
+        nak_obj1 = dict()
+        nak_obj1['nakshatra']=nakshatras[str(nak[2])]
+        nak_obj1['nakshatra_time']=format_time(nak[3])
+        nak_obj1['nakshatra_id']=nak[2]
+        nak_list.append(nak_obj1)
     date_info['nakshatra']=nak_list
 
     # Next update the complex ones
@@ -1206,7 +1208,7 @@ def parse_input_arguments_from_json_object (inputargs):
 
         old_date_info = compute_detailed_info_for_a_given_day(location, date, debug)
         ti_list = old_date_info['tithi']
-        ti = read_from_list (ti_list, 'tithi_id', debug)
+        ti =  ti_list[0]['tithi_id']
         int_tithi = int(ti)
         masam_dict = dict()
         masam_dict = old_date_info['masam']
