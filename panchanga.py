@@ -37,12 +37,13 @@ import sys
 import optparse
 from pytz import timezone, utc
 from datetime import datetime
+import requests
 
 
 Date = struct('Date', ['year', 'month', 'day'])
 Place = struct('Location', ['latitude', 'longitude', 'timezone'])
 
-commands_available = {
+commands_available = [
         "GET_ALL_NAKSHATRA", 
         "GET_ALL_TITHI", 
         "GET_ALL_MASAM", 
@@ -58,7 +59,7 @@ commands_available = {
         "GET_PANCHANGA_MONTH",
         "GET_PANCHANGA_DAY",
         "GET_PANCHANGA_AND_FIND_NEXT_EVENT"
-        }
+        ]
 
 SUB_C_E_USAGE_STR    = "Couldn't find proper input value for -e option, provide either m or y."
 SUB_C_IM_USAGE_STR   = "option -i requires tithis in range 1-30 and -m requires months in range 1-12"
@@ -85,8 +86,8 @@ SUB_CMD_USAGE_STR    = """ Avilable Commands:
 SUB_LOC_USAGE_STR    = "Provide a proper location, in format City,State, ex: Hyderabad, Telangana or " + "\n" + "latitude, longitude format, i.e 'longitude':'13.650'  'latitude':'79.41667' "
 SUB_TZ_USAGE_STR     = "Provide a proper timezone, in format Continent/Country ex: Aisa/Kolkata"
 SUB_DAT_USAGE_STR    = "Provide a proper date, in format DD-MM-YYYY format ex: 16-Nov-1983 should be represented as 16-11-1983"
-SUB_TIT_USAGE_STR    = "Provide a proper Tithi, in format 1-30, 1 Sukla Pakasha Padhyami and 30 is Krishna Paksha Amavasya"
-SUB_MAS_USAGE_STR    = "Provide a proper Masam, in format 1-12, 1 being Chaitra masam and 12 being Phalguna masam"
+SUB_TIT_USAGE_STR    = "Provide a proper Tithi, in range between 1-30, 1 Sukla Pakasha Padhyami and 30 is Krishna Paksha Amavasya"
+SUB_MAS_USAGE_STR    = "Provide a proper Masam, in range between 1-12, 1 being Chaitra masam and 12 being Phalguna masam"
 SUB_TAR_USAGE_STR    = "Provide a proper Target Year, in format YYYY, ex: 2020, 1983, 1955 etc"
 SUB_HASH_USE_STR     = "Provide table names, valid tables are tithis, nakshatras, varas, yogas, karanas, masas, smasas adhikamasas, samvats, ritus"
 
@@ -105,11 +106,33 @@ MAIN_OPT_USAGE_EX5   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e m  
 MAIN_OPT_USAGE_EX6   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -e y  # Displays Tirupati's detailed panchang info of given telugu year"
 MAIN_OPT_USAGE_EX7   = "python3 panchanga.py -C -l Tirupati -d 10-11-2020 -i 10 -m 2  # Displays Tirupati's next occurance of given tithi and masam in gregorian dates"
 MAIN_OPT_USAGE_EX8   = "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020 -i 5 -m 10  # Displays given location's detailed panchang info of given tithi and masam"
-MAIN_OPT_USAGE_EX9   = "python3 panchanga.py -f  <file>.json               # Based on json file contents result are displayed"
+MAIN_OPT_USAGE_EX9   = "python3 panchanga.py -C -x 13.650  -y 79.41667 -t 'Asia/Kolkata' -d 10-11-2020 -T 2021 # Displays given telugu date's (tithi and masam) next occurance for given target year"
+MAIN_OPT_USAGE_EX10  = "python3 panchanga.py -f  <file>.json               # Based on json file contents result are displayed"
 
 MAIN_OPT_ALL_USE_STR = MAIN_OPT_AL_USE_STR + "\n" + MAIN_OPT_AC_USE_STR + "\n" +  MAIN_OPT_AC_USE_STR1
-MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7 + "\n" + MAIN_OPT_USAGE_EX8 + "\n" +  MAIN_OPT_USAGE_EX9
+MAIN_OPT_USAGE_EXM = MAIN_OPT_USAGE_EX1 + "\n" + MAIN_OPT_USAGE_EX2 + "\n" + MAIN_OPT_USAGE_EX3 + "\n" + MAIN_OPT_USAGE_EX4 + "\n" + MAIN_OPT_USAGE_EX5 + "\n" + MAIN_OPT_USAGE_EX6 + "\n" + MAIN_OPT_USAGE_EX7 + "\n" + MAIN_OPT_USAGE_EX8 + "\n" +  MAIN_OPT_USAGE_EX9 + "\n" + MAIN_OPT_USAGE_EX10
 MAIN_USAGE_STR = MAIN_OPT_ALL_USE_STR + "\n" + MAIN_OPT_USAGE_GUIDE + "\n" + MAIN_OPT_USAGE_EXM
+
+MAIN_JSON_OBJ_USE    = {
+        "command":"GET_PANCHANGA_DAY", 
+        "location":{
+            "location":"Hyderabad,Telangana",
+            "timezone":"Asia/Karachi"
+            },
+        "location":{
+            "latitude":"25.39242",
+            "longitude":"68.37366",
+            "timezone":"Asia/Karachi"
+            }, 
+        "location":{
+            "place":"Hyderabad"
+            },
+        "date":"16-11-1983",
+        "tithi":"11",
+        "masam":"8",
+        "target_year":"2020",
+        "verbose":"0"
+}
 
 format_time = lambda t: "%02d:%02d:%02d" % (t[0], t[1], t[2])
 format_date = lambda t: "%02d-%02d-%02d" % (t[2], t[1], t[0])
@@ -569,7 +592,6 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     i_yy=int(yyyy)
     
     jd = gregorian_to_jd(Date(i_yy, i_mm, i_dd))
-    
     tzname = location['timezone']
     tzoff=timezone(tzname)
     tzoffset = compute_timezone_offset(i_yy, i_mm, i_dd, tzoff)
@@ -695,6 +717,8 @@ def read_from_list (input_list, lookup, debug):
     if debug :
         print ("List contents:%s len:%d lookup:%s" % (input_list, len(input_list), lookup))
     if len(input_list) != 0:
+        if debug:
+            print ("input_list[0][lookup] : %s lookup: %s" % (input_list[0], lookup))
         output = input_list[0][lookup]
     if len(input_list) == 2:
         output = output + ", " + input_list[1][lookup]
@@ -788,7 +812,12 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
                    if 'Amavasya' in ti:
                       krishna_list.append(date_info)
                    else:
-                       date_info['tithi'] = 'Amavasya' # assign amavasya so that code will break
+                      tithi_list = []
+                      tithi_obj = dict()
+                      tithi_obj["tithi"]='Amavasya' # assign amavaysa so that code will break
+                      tithi_obj["tithi_id"]=30
+                      tithi_list.append(tithi_obj)
+                      date_info['tithi']=tithi_list
                 except:
                   #do nothing
                   i_start_day=i_start_day - 1
@@ -809,10 +838,11 @@ def compute_detailed_info_for_a_given_month(location, date, debug):
                     print("move to next month and test %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
 
          # update the thithi so that code can exit smoothly
-         try:
+         if 'tithi' in date_info:
             ti_list = date_info['tithi']
+            print ("ti_lits is %s" %ti_list)
             ti = read_from_list (ti_list, 'tithi', debug)
-         except:
+         else:
             ti='Amavasya'
 
          #safe side iterate through only 33 times not beyond that
@@ -963,7 +993,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
     date_info['day_duration']=format_time(day_dur)
 
     if debug == 1:
-      print("{Ruthuvu: %s ṛtu}" % (ritus[str(rtu)]))
+      print("{Ruthuvu: %s rtu}" % (ritus[str(rtu)]))
     date_info['ruthuvu']=ritus[str(rtu)]
 
     ##Extra data for advanced users 
@@ -995,9 +1025,9 @@ def list_location(locationName, verbose):
     #print(cities)
     location='None'
     if locationName != 'None':
-        try:
+        if str(locationName) in cities:
           location=cities[str(locationName)]
-        except:
+        else:
           print("Couldnt find given location (%s) information." % (locationName))
         if location != 'None':
             if verbose:
@@ -1078,11 +1108,11 @@ def find_given_location_from_static_db(locationName):
     cities = json.load(fp)
     #all_cities = cities.keys()
     fp.close()
-    try:
+    if str(locationName) in cities:
        location=cities[str(locationName)]
-    except:
-       print("Couldnt find given location (%s) information." % (locationName))
-       print_err_and_exit(parser, SUB_C_L_USAGE_STR)
+    else:
+       errMsg = "Couldn't find given location " + locationName
+       location = print_err_and_return(errMsg, SUB_C_L_USAGE_STR)
     return location
 
 def display_hashvalues(tablename, debug):
@@ -1091,14 +1121,14 @@ def display_hashvalues(tablename, debug):
     sktnames = json.load(fp)
     fp.close()
 
-    try:
+    if tablename in sktnames:
         hashtable = sktnames[tablename]
         if debug:
             print ("TableName: %s debug:%d" % (tablename, debug))
         return hashtable
-    except:
-        print("Invalid %s table, Provide a valid table name." % (tablename))
-        print_err_and_exit(parser, SUB_HASH_USE_STR)
+    else:
+        errMsg = "Provide a valid table, given invalid table " + tablename
+        return print_err_and_return(errMsg, SUB_HASH_USE_STR)
 
 def read_input_arguments_from_json_file (filename):
     debug = 0
@@ -1109,8 +1139,8 @@ def read_input_arguments_from_json_file (filename):
         fp.close()
         return inputargs
     except:
-        print("Provide a valid input json file.")
-        print_err_and_exit(parser, SUB_FILE_USAGE_STR)
+        errMsg = "Provide a valid input json file"
+        return print_err_and_return(errMsg, SUB_FILE_USAGE_STR)
 
 def validate_input_command(command, debug):
     found_cmd = 0
@@ -1120,52 +1150,95 @@ def validate_input_command(command, debug):
            if cmd == command:
                found_cmd = 1
                break
-    if found_cmd == 0:
-           print ("Invalid input command: %s" % command)
-           print_err_and_exit(parser, SUB_CMD_USAGE_STR)
-    else:  return found_cmd
+    return found_cmd
+
+
+def getLattitudeAndLongitude(place, debug):
+    url = "http://open.mapquestapi.com/geocoding/v1/address?key=NMA2zoKEernONoQ60v6bMOM3EFlAEHbA"
+    params = {"location":place}
+    result = requests.post(url, json=params)
+    if debug:
+    	print ("result: %s" %result)
+    response = json.loads(result.text)
+    resultlist = response['results']
+    if debug:
+    	print ("resultlist: %s" % resultlist)
+    locations = resultlist[0]['locations']
+    lat , lon = locations[0]['latLng']['lat'], locations[0]['latLng']['lng']
+    if debug:
+    	print("lat %s lon %s:" % (lat, lon))
+    return (lat, lon)
 
 def parse_input_arguments_from_json_object (inputargs):
     location = dict()
 
     #read vwrbose which needs to be used for debugging, otherwise disable it
-    try:
+    if "verbose" in inputargs:
         debug=int(inputargs["verbose"])
-    except:
+    else:
         debug = 0
  
     #read command which needs to be executed, otherwise exit with error
-    try:
+    if "command" in inputargs:
        command=inputargs["command"]
-       if validate_input_command(command, debug):
+       ret = validate_input_command(command, debug)
+       if ret == 0:
+           errMsg = "Invalid input command " + command
+           return print_err_and_return(errMsg, commands_available)
+       else:
           ret_value = generic_commands (command, debug)
           if ret_value != 'None':
              return ret_value
-    except:
-       print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+    else:
+       errMsg = "Couldn't find valid command, provide a valid command to proceed"
+       return print_err_and_return(errMsg, commands_available)
 
     #read location for which panchange needs to be computed, otherwise exit with error
-    try:
+    if "location" in inputargs:
         loc = inputargs["location"]
-    except:       
-        print_err_and_exit(parser, SUB_LOC_USAGE_STR)
+    else:       
+        errMsg = "Couldn't find valid location, provide a valid location to proceed"
+        return print_err_and_return(errMsg, SUB_LOC_USAGE_STR)
 
-    try:
-        location['latitude'] = float(loc["latitude"])
-        location['longitude'] = float(loc["longitude"])
+    if "latitute" and "longitude" and "timezone" in loc:
+        if "latitude" in loc:
+            location['latitude'] = float(loc["latitude"])
+        else:
+            errMsg = "Couldn't find valid latitude, provide a valid latitude to proceed"
+            return print_err_and_return(errMsg, SUB_LOC_USAGE_STR)
+        if "longitude" in loc:
+            location['longitude'] = float(loc["longitude"])
+        else:
+            errMsg = "Couldn't find valid longitude, provide a valid longitude to proceed"
+            return print_err_and_return(errMsg, SUB_LOC_USAGE_STR)
         #read timezone for which panchange needs to be computed, otherwise exit with error
-        try:
+        if "timezone" in loc:
             location['timezone'] = loc["timezone"]
-        except:
-            print_err_and_exit(parser, SUB_TZ_USAGE_STR)
-    except:       
-        try:
+        else:
+            errMsg = "Couldn't find valid timezone, provide a valid timezone to proceed"
+            return print_err_and_return(errMsg, SUB_TZ_USAGE_STR)
+    else:
+        if "location" in loc:
+            locationName=loc["location"]
+            #read timezone for which panchange needs to be computed, otherwise exit with error
+            if "timezone" in loc:
+                location['timezone'] = loc["timezone"]
+            else:
+                errMsg = "Couldn't find valid timezone, provide a valid timezone to proceed"
+                return print_err_and_return(errMsg, SUB_TZ_USAGE_STR)
+            lat, lon = getLattitudeAndLongitude(locationName, debug)
+            location['latitude'] = float(lat)
+            location['longitude'] = float(lon)
+        elif "place" in loc:
             locationName=loc["place"]
             location = find_given_location_from_static_db(locationName)
-            if verbose:
+            if "error" in location:
+                return location
+            if debug:
                 print("Location Details: %s %s" %(locationName, location))
-        except:
-            print_err_and_exit(parser, SUB_LOC_USAGE_STR)
+        else:
+            errMsg = "Couldn't find valid location, provide a valid location to proceed"
+            return print_err_and_return(errMsg, SUB_LOC_USAGE_STR)
 
     #read date for which panchange needs to be computed, otherwise exit with error
     try:
@@ -1173,7 +1246,11 @@ def parse_input_arguments_from_json_object (inputargs):
        date_format="%d-%m-%Y"
        datetime.strptime(date,date_format)
     except:
-       print_err_and_exit(parser, SUB_DAT_USAGE_STR)
+       if "date" in inputargs: 
+           errMsg = "Couldn't find valid date[" + date + "], provide a valid date to proceed"
+       else:
+           errMsg = "Couldn't find valid date, provide a valid date to proceed"
+       return print_err_and_return(errMsg, SUB_DAT_USAGE_STR)
 
     ret_value = dict()
     #read date for which panchange needs to be computed, otherwise exit with error
@@ -1184,27 +1261,30 @@ def parse_input_arguments_from_json_object (inputargs):
     elif command == "GET_PANCHANGA_YEAR":
        ret_value = compute_detailed_info_for_a_given_year(location, date, debug)
     elif command == "GET_NEXT_HINDU_DATE":
-        try:
+        if "tithi" in inputargs:
             int_tithi=int(inputargs["tithi"])
-        except:
-            print_err_and_exit(parser, SUB_TIT_USAGE_STR)
-        try:
+        else:
+            errMsg = "Couldn't find valid tithi, provide a valid tithi to proceed"
+            return print_err_and_return(errMsg, SUB_TIT_USAGE_STR)
+        if "masam" in inputargs:
             int_masam=int(inputargs["masam"])
-        except:
-            print_err_and_exit(parser, SUB_MAS_USAGE_STR)
+        else:
+            errMsg = "Couldn't find valid masam, provide a valid masam to proceed"
+            return print_err_and_return(errMsg, SUB_MAS_USAGE_STR)
         if int_tithi < 1 or int_tithi > 30:
-            print("Invalid input value (%d) for -i option, provide in range 1-30." %(int_tithi))
-            print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            errMsg = "Invalid input value (" + inputargs["tithi"] + ") for -i option, provide in range 1-30."
+            return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         if int_masam < 1 or int_masam > 12:
-            print("Invalid input value (%d) for -m option, provide in range 1-12." %(int_masam))
-            print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+            errMsg = "Invalid input value (" + inputargs["masam"] + ") for -m option, provide in range 1-12."
+            return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
     elif command == "GET_PANCHANGA_AND_FIND_NEXT_EVENT":
-        try:
+        if "target_year" in inputargs:
             int_target_year=int(inputargs["target_year"])
             target_date=format_date(Date(int_target_year, 1, 1)) #start from JAN 1 st of target year
-        except:
-            print_err_and_exit(parser, SUB_TAR_USAGE_STR)
+        else:
+            errMsg = "Invalid input target_year, please provide a valid target_year"
+            return print_err_and_return(errMsg, SUB_TAR_USAGE_STR)
 
         old_date_info = compute_detailed_info_for_a_given_day(location, date, debug)
         ti_list = old_date_info['tithi']
@@ -1216,7 +1296,8 @@ def parse_input_arguments_from_json_object (inputargs):
         ret_value = compute_next_gegorian_date_of_give_hindu_data(location, target_date, int_tithi, int_masam, debug)
     #if no proper command found then throw error
     else :
-       print_err_and_exit(parser, SUB_CMD_USAGE_STR)
+       errMsg = "Invalid input command " + command
+       return print_err_and_return(errMsg, commands_available)
 
     return ret_value
 
@@ -1227,7 +1308,8 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
     loc_obj  = dict()
     #no argumemts given, throw error
     if not args:
-        print_err_and_exit(parser, MAIN_USAGE_STR)
+        errMsg = "Couldn't find any arguments"
+        print_err_and_exit(parser, errMsg, "Provide valid arguments, check help")
     else:
         if verbose:
             print ("Inside read_input_arguments_from_command_line_arguments pasring verbose :%s"  % args)
@@ -1237,7 +1319,11 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
             json_obj['command'] = args[0]
             if verbose:
                 print ("Inside parse_input_arguments_from_json_object: parsing command: %s" % json_obj['command'])
-            if validate_input_command(json_obj['command'], verbose):
+            ret = validate_input_command(json_obj['command'], verbose)
+            if ret == 0:
+               errMsg = "Invalid input command " + json_obj['command']
+               print_err_and_exit(parser, errMsg, SUB_CMD_USAGE_STR)
+            else:
                 if is_generic_command (json_obj['command'], verbose) == 1:
                     return json_obj 
         #read the location information, which is mandatory parameter for calculating detailed info 
@@ -1255,8 +1341,8 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
                 print("Location Details: %s" %(loc_obj))
         #if not then it is an error 
         else :
-            print("Location not specified, please provide correct location.")
-            print_err_and_exit(parser, MAIN_OPT_C_USAGE_STR)
+            errMsg = "Location not specified, please provide correct location."
+            print_err_and_exit(parser, errMsg, MAIN_OPT_C_USAGE_STR)
 
         json_obj['location'] = loc_obj 
 
@@ -1269,73 +1355,84 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
        #read the extra optional paramter (-e), which will tell whether to display monthy or yearly info
         if options.extra_given:
             if not options.date_given:
-                print_err_and_exit(parser, "Date (-d) is mandatory parameter for -e option" + "\n" + MAIN_USAGE_STR)
+                print_err_and_exit(parser, "Date not found", "Date (-d) is mandatory parameter for -e option")
             if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                try :
+                if len(args) > 5 :
                     extra_option=args[5]
                     json_obj['extra']=args[5]
-                except:
-                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find argument for -e", SUB_C_E_USAGE_STR)
             elif options.date_given and options.location_given:
-                try :
+                if len(args) > 3 :
                     extra_option=args[3]
                     json_obj['extra']=args[3]
-                except:
-                    print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find arguments for -e", SUB_C_E_USAGE_STR)
             else:
-                print_err_and_exit(parser, SUB_C_E_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                print_err_and_exit(parser, "Couldn't find arguments for -e", SUB_C_E_USAGE_STR)
 
             #curently supporting monthly or yearly info only
             if extra_option != 'm' and extra_option != 'y':
-                print("Invalid input value (%s) for -e option, provide either m or y." %(extra_option))
-                print_err_and_exit(parser, MAIN_USAGE_STR)
+                errMsg = "Invalid input value " +  extra_option + " for -e option, provide either m or y."
+                print_err_and_exit(parser, errMsg, SUB_C_E_USAGE_STR)
 
         #read the tithi and masam given by user and start calculating gregorian date 
         if options.tithi_given and options.masam_given:
             if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                try :
+                if len(args) > 6 :
                     given_tithi=(args[5])
                     given_masam=(args[6])
                     json_obj['tithi']=args[5]
                     json_obj['masam']=args[6]
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find arguments for tithi(-i)", SUB_C_IM_USAGE_STR)
             elif options.date_given and options.location_given:
-                try :
+                if len(args) > 4 :
                     given_tithi=(args[3])
                     given_masam=(args[4])
                     json_obj['tithi']=args[3]
                     json_obj['masam']=args[4]
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find enough arguments for masam(-m)", SUB_C_IM_USAGE_STR)
             else:
-                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                print_err_and_exit(parser, "Couldn't find enough arguments", SUB_C_IM_USAGE_STR)
 
         elif options.target_year :
             if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                try :
+                if len(args) > 5 :
                     target_year=(args[5])
                     json_obj['target_year']=args[5]
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find arguments for -T target_year", SUB_C_IM_USAGE_STR)
             elif options.date_given and options.location_given:
-                try :
+                if len(args) > 3 :
                     target_year=(args[3])
                     json_obj['target_year']=args[3]
-                except:
-                    print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                else:
+                    print_err_and_exit(parser, "Couldn't find arguments for -T target_year", SUB_C_IM_USAGE_STR)
             else:
-                print_err_and_exit(parser, SUB_C_IM_USAGE_STR + "\n" + MAIN_USAGE_STR)
+                print_err_and_exit(parser, "Couldn't find arguments for -T target_year", SUB_C_IM_USAGE_STR)
  
         if verbose:
             print("JSON_OBJ: %s" % json_obj)
         return json_obj
 
-def print_err_and_exit(parser, errMsg):
-    parser.error(errMsg)
-    print(MAIN_USAGE_STR)
-    sys.exit(2)
+def print_err_and_return(errMsg, suggestions):
+    print (errMsg)
+    errorMsg = dict()
+    errorMsg["error"] = errMsg
+    errorMsg["suggestion"] = suggestions
+    errorMsg["usage"] = json.dumps(MAIN_JSON_OBJ_USE)
+    return errorMsg
 
+def print_err_and_exit(parser, errMsg, suggestions):
+    errorMsg1 = dict()
+    errorMsg1["error"] = errMsg
+    errorMsg1["suggestion"] = suggestions
+    #errorMsg1["usage"] = MAIN_USAGE_STR
+    print(json.dumps(errorMsg1,default=lambda o: o.__dict__, sort_keys=False, indent=4))
+    parser.error(errMsg)
+    sys.exit(2)
 
 if __name__ == "__main__":
 
