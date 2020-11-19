@@ -1,0 +1,9 @@
+{
+	"command"	:	"GET_PANCHANGA_DAY",
+	"location"	:	{
+		"location"	:	"Hyderabad,Telangana",
+		"timezone"	:	"Asia/Kolkata"
+	},
+	"date"		:	"15-10-2020",
+	"verbose"	: 	"1"
+}

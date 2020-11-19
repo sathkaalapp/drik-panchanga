@@ -1,0 +1,10 @@
+{
+	"command"	:	"GET_PANCHANGA_DAY",
+	"location"	:	{
+		"latitude"	:	"25.39242",
+		"longitude"	:	"68.37366",
+		"timezone"	:	"Asia/Kolkata"
+	},
+	"date"		:	"16-11-1983",
+	"verbose"	: 	"0"
+}

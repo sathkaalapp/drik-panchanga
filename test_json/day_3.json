@@ -1,0 +1,8 @@
+{
+	"command"	:	"GET_PANCHANGA_DAY",
+	"location"	:	{
+		"place"	:	"Vishakhapatnam"
+	},
+	"date"		:	"15-11-2020",
+	"verbose"	: 	"1"
+}

@@ -1,0 +1,4 @@
+{
+	"command"	:	"GET_ALL_STATIC_LOCATIONS",
+	"verbose"	: 	"1"
+}

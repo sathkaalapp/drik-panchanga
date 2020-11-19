@@ -1,0 +1,12 @@
+{
+	"command0"	:	"GET_ALL_NAKSHATRA",
+	"command1"	:	"GET_ALL_TITHI",
+	"command2"	:	"GET_ALL_MASAM",
+	"command3"	:	"GET_ALL_ADHIKA_MASAM",
+	"command4"	:	"GET_ALL_HINDU_YEARS",
+	"command5"	:	"GET_ALL_HINDU_YOGA",
+	"command6"	:	"GET_ALL_HINDU_RITUS",
+	"command7"	:	"GET_ALL_HINDU_VARAS",
+	"command"	:	"GET_ALL_HINDU_KARANAS",
+	"verbose"	: 	"1"
+}

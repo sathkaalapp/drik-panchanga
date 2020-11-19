@@ -1,0 +1,9 @@
+{
+	"command"	:	"GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR",
+	"loc"	:	{
+		"place"		:	"Vishakhapatnam"
+	},
+	"date"		:	"01-01-1970",
+	"target_year"	:	"2020",
+	"verbose"	: 	"0"
+}

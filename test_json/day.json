@@ -1,0 +1,19 @@
+{
+	"command"	:	"GET_PANCHANGA_DAY",
+	"command1"	:	"GET_PANCHANGA_NEXT_EVENT",
+	"location"	:	{
+		"location"	:	"Hyderabad,Telangana",
+		"place1"	:	"Hyderabad",
+		"place2"	:	"Vishakhapatnam",
+		"latitude1"	:	"25.39242",
+		"longitude1"	:	"68.37366",
+		"timezone"	:	"Asia/Karachi"
+	},
+	"timezone1"	:	"Asia/Kolkata",
+	"timezone"	:	"Asia/Karachi",
+	"date"		:	"16-11-1983",
+	"tithi"		:	"11",
+	"masam"		:	"8",
+	"target_year"	:	"2020",
+	"verbose"	: 	"1"
+}

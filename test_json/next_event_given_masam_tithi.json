@@ -1,0 +1,16 @@
+{
+	"command"	:	"GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI",
+	"loc"	:	{
+		"place"		:	"Vishakhapatnam"
+	},
+	"date"		:	"16-11-2020",
+	"tithi"		:	{
+		"tithi" :  	"Amavasya",
+		"tithi_id":	"11"
+	},
+	"masam"		:	{
+		"masam" : 	"Sravanamasam",
+		"masam_id" :	"15"
+	},
+	"verbose"	: 	"0"
+}
