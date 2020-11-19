@@ -58,7 +58,6 @@ commands_available = [
         "GET_PANCHANGA_YEAR",
         "GET_PANCHANGA_MONTH",
         "GET_PANCHANGA_DAY",
-        "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS",
         "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI", 
         "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR"
         ]
@@ -84,7 +83,6 @@ SUB_CMD_USAGE_STR    = """ Avilable Commands:
                           "GET_PANCHANGA_YEAR"
                           "GET_PANCHANGA_MONTH"
                           "GET_PANCHANGA_DAY"
-                          "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS",
                           "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI", 
                           "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR"
                           """
@@ -1266,30 +1264,6 @@ def parse_input_arguments_from_json_object (inputargs):
        ret_value = compute_detailed_info_for_a_given_month(location, date, debug)
     elif command == "GET_PANCHANGA_YEAR":
        ret_value = compute_detailed_info_for_a_given_year(location, date, debug)
-    elif command == "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS":
-        int_nak = 0
-        int_tithi = 0
-        int_masam = 0
-        if "tithi" in inputargs:
-            tithi_obj = inputargs["tithi"]
-            int_tithi=int(tithi_obj["tithi_id"])
-            if int_tithi < 1 or int_tithi > 30:
-                errMsg = "Invalid input value (" + inputargs["tithi"]["tithi_id"] + ") for -i option, provide in range 1-30."
-                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
-        if "nakshatra" in inputargs:
-            nak_obj = inputargs["nakshatra"]
-            int_nak=int(nak_obj["nak_id"])
-            if int_nak < 1 or int_nak > 27:
-                errMsg = "Invalid input value (" + inputargs["nakshatra"]["nak_id"] + ") for -n option, provide in range 1-27."
-                return print_err_and_return(errMsg, SUB_C_NM_USAGE_STR)
-        if "masam" in inputargs:
-            masam_obj = inputargs["masam"]
-            int_masam=int(masam_obj["masam_id"])
-            if int_masam < 1 or int_masam > 12:
-                errMsg = "Invalid input value (" + inputargs["masam"]["masam_id"] + ") for -m option, provide in range 1-12."
-                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
-        #ret_value = compute_next_gegorian_date_of_give_details(location, date, int_tithi, int_masam, int_nak, debug)
-        ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
     elif command == "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI":
         if "tithi" in inputargs:
             tithi_obj = inputargs["tithi"]
