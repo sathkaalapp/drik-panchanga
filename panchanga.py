@@ -689,24 +689,52 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
       print("{Varam:  %s}" % vaaras[str(vara)])
     date_info['varam']=vaaras[str(vara)]
 
+    tithi_list = []
+    tithi_obj = dict()
     name, hms = format_name_hms(ti, tithis)
     if debug == 1:
       print("{Thiti: %s %s}" % (name,hms))
-    date_info['tithi']=name
-    date_info['tithi_time']=hms
+    tithi_obj["tithi"]=tithis[str(ti[0])]
+    tithi_obj['tithi_time']=format_time(ti[1])
+    tithi_obj["tithi_id"]=ti[0]
+    tithi_list.append(tithi_obj)
+    if len(ti) == 4:
+        tithi_obj1 = dict()
+        tithi_obj1["tithi"]=tithis[str(ti[2])]
+        tithi_obj1['tithi_time']=format_time(ti[3])
+        tithi_obj1["tithi_id"]=ti[2]
+        tithi_list.append(tithi_obj1)
+    date_info['tithi']=tithi_list
 
+    nak_list = []
+    nak_obj = dict()
     name, hms = format_name_hms(nak, nakshatras)
     if debug == 1:
       print("{Nakshatra: %s %s}" % (name, hms))
-    date_info['nakshatra']=name
-    date_info['nakshatra_time']=hms
+    nak_obj['nakshatra']=nakshatras[str(nak[0])]
+    nak_obj['nakshatra_time']=format_time(nak[1])
+    nak_obj['nakshatra_id']=nak[0]
+    nak_list.append(nak_obj)
+    if len(nak) == 4:
+        nak_obj1 = dict()
+        nak_obj1['nakshatra']=nakshatras[str(nak[2])]
+        nak_obj1['nakshatra_time']=format_time(nak[3])
+        nak_obj1['nakshatra_id']=nak[2]
+        nak_list.append(nak_obj1)
+    date_info['nakshatra']=nak_list
 
     # Next update the complex ones
+    masam_obj = dict()
     month_name = masas[str(mas[0])]
+    is_leap = mas[1]
+    if is_leap:  month_name = "Adhika " + month_name.lower()
     month_name = month_name + " masa"
     if debug == 1:
       print("{Masam: %s}" % (month_name))
-    date_info['masam']=month_name
+    masam_obj['masam']=month_name
+    masam_obj['masam_id']=mas[0]
+    masam_obj['is_leap_masa']=mas[1]
+    date_info['masam']=masam_obj
 
     return date_info
 
@@ -1265,24 +1293,20 @@ def parse_input_arguments_from_json_object (inputargs):
     elif command == "GET_PANCHANGA_YEAR":
        ret_value = compute_detailed_info_for_a_given_year(location, date, debug)
     elif command == "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI":
+        int_tithi = 0
+        int_masam = 0
         if "tithi" in inputargs:
             tithi_obj = inputargs["tithi"]
             int_tithi=int(tithi_obj["tithi_id"])
-        else:
-            errMsg = "Couldn't find valid tithi, provide a valid tithi to proceed"
-            return print_err_and_return(errMsg, SUB_TIT_USAGE_STR)
+            if int_tithi < 1 or int_tithi > 30:
+                errMsg = "Invalid input value (" + inputargs["tithi"]["tithi_id"] + ") for -i option, provide in range 1-30."
+                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         if "masam" in inputargs:
             masam_obj = inputargs["masam"]
             int_masam=int(masam_obj["masam_id"])
-        else:
-            errMsg = "Couldn't find valid masam, provide a valid masam to proceed"
-            return print_err_and_return(errMsg, SUB_MAS_USAGE_STR)
-        if int_tithi < 1 or int_tithi > 30:
-            errMsg = "Invalid input value (" + inputargs["tithi"]["tithi_id"] + ") for -i option, provide in range 1-30."
-            return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
-        if int_masam < 1 or int_masam > 12:
-            errMsg = "Invalid input value (" + inputargs["masam"]["masam_id"] + ") for -m option, provide in range 1-12."
-            return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
+            if int_masam < 1 or int_masam > 12:
+                errMsg = "Invalid input value (" + inputargs["masam"]["masam_id"] + ") for -m option, provide in range 1-12."
+                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
     elif command == "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR":
         if "target_year" in inputargs:
