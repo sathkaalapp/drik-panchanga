@@ -53,16 +53,19 @@ commands_available = [
         "GET_ALL_HINDU_RITUS", 
         "GET_ALL_HINDU_VARAS" , 
         "GET_ALL_HINDU_KARANAS",
-        "GET_ALL_HASH_TABLES",
-        "GET_NEXT_HINDU_DATE", 
+        "GET_ALL_STATIC_LOCATIONS",
+        "GET_ALL_STATIC_TABLES",
         "GET_PANCHANGA_YEAR",
         "GET_PANCHANGA_MONTH",
         "GET_PANCHANGA_DAY",
-        "GET_PANCHANGA_AND_FIND_NEXT_EVENT"
+        "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS",
+        "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI", 
+        "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR"
         ]
 
 SUB_C_E_USAGE_STR    = "Couldn't find proper input value for -e option, provide either m or y."
 SUB_C_IM_USAGE_STR   = "option -i requires tithis in range 1-30 and -m requires months in range 1-12"
+SUB_C_NM_USAGE_STR   = "option -n requires nakshatra in range 1-27 and -m requires months in range 1-12"
 SUB_C_D_USAGE_STR    = "option (-d) requires proper date in DD-MM-YYYY format"
 SUB_C_L_USAGE_STR    = "option (-l) requires proper location name, please get proper location using -L option"
 SUB_FILE_USAGE_STR   = "Provide a valid json file with all necessary arguments"
@@ -75,13 +78,15 @@ SUB_CMD_USAGE_STR    = """ Avilable Commands:
                           "GET_ALL_HINDU_YOGA"
                           "GET_ALL_HINDU_RITUS"
                           "GET_ALL_HINDU_VARAS"
-                          "GET_ALL_HINDU_KARANS" 
-                          "GET_ALL_HASH_TABLES",
-                          "GET_NEXT_HINDU_DATE"
+                          "GET_ALL_HINDU_KARANAS" 
+                          "GET_ALL_STATIC_TABLES",
+                          "GET_ALL_STATIC_LOCATIONS",
                           "GET_PANCHANGA_YEAR"
                           "GET_PANCHANGA_MONTH"
                           "GET_PANCHANGA_DAY"
-                          "GET_PANCHANGA_AND_FIND_NEXT_EVENT"
+                          "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS",
+                          "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI", 
+                          "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR"
                           """
 SUB_LOC_USAGE_STR    = "Provide a proper location, in format City,State, ex: Hyderabad, Telangana or " + "\n" + "latitude, longitude format, i.e 'longitude':'13.650'  'latitude':'79.41667' "
 SUB_TZ_USAGE_STR     = "Provide a proper timezone, in format Continent/Country ex: Aisa/Kolkata"
@@ -583,7 +588,6 @@ def compute_detailed_info_for_a_given_year(location, date, debug):
 
 def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, masam_given, debug):
     if debug:
-        #print("Given date (%s)" %(date))
         print("Tithi and Masam are given, now calculate Greogorian Dates of current year")
 
     (dd,mm,yyyy) = date.split('-')
@@ -604,7 +608,7 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     cur_new_moon = jd
     next_new_moon_date = jd_to_gregorian(jd)
      
-    while masam_given != masam :
+    while masam_given != 0 and  masam_given != masam :
       tit = tithi(jd, place)[0]
       critical = sunrise(jd, place)[0]
       next_new_moon = new_moon(critical, tit, +1)
@@ -634,7 +638,7 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     date_format="%d-%m-%Y"
     # it is observed that if given tithi is amavasya, then below logic is priting last month's amavasa instead of cur month
     if tit == 30: tit = 0
-    while tithi_given != tit:
+    while tithi_given != 0 and tithi_given != tit:
         i_start_day=i_start_day + 1
         start_date=format_date(Date(i_start_year,i_start_month,i_start_day))
         try:
@@ -665,9 +669,7 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
                     print("move to next month and test %d-%d-%d" % (i_start_day, i_start_month, i_start_year))
 
     # open all names which are needed so that can display in str
-    fp = open("sanskrit_en_names.json")
-    sktnames = json.load(fp)
-    fp.close()
+    sktnames = get_all_hindu_panchanga_tables(debug)
 
     tithis = sktnames["tithis"]
     nakshatras = sktnames["nakshatras"]
@@ -680,8 +682,8 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
     vara = vaara(jd)
     date_info = dict()
 
-    if debug:
-        print("Given Titthi %s and Masam %s" % ( tithis[str(tithi_given)], masas[str(masam_given)]))
+    if debug and tithi_given != 0 and masam_given != 0:
+        print("Given Titthi %s and Masam %s" % (tithis[str(tithi_given)], masas[str(masam_given)]))
 
     date_info['gregorian_date']=format_date(cur_date)
 
@@ -708,8 +710,6 @@ def compute_next_gegorian_date_of_give_hindu_data(location, date, tithi_given, m
       print("{Masam: %s}" % (month_name))
     date_info['masam']=month_name
 
-    #if debug == 1:
-    #    print(json.dumps(date_info, default=lambda o: o.__dict__, sort_keys=False, indent=4))
     return date_info
 
 def read_from_list (input_list, lookup, debug):
@@ -876,9 +876,7 @@ def compute_detailed_info_for_a_given_day(location, date, debug):
 
     jd = gregorian_to_jd(Date(i_yy, i_mm, i_dd))
     # open all names which are needed so that can display in str
-    fp = open("sanskrit_en_names.json")
-    sktnames = json.load(fp)
-    fp.close()
+    sktnames = get_all_hindu_panchanga_tables(debug)
 
     tithis = sktnames["tithis"]
     nakshatras = sktnames["nakshatras"]
@@ -1065,7 +1063,9 @@ def is_generic_command (command, debug):
        return 1
     elif command == "GET_ALL_HINDU_KARANAS":
        return 1
-    elif command == "GET_ALL_HASH_TABLES":
+    elif command == "GET_ALL_STATIC_TABLES":
+       return 1
+    elif command == "GET_ALL_STATIC_LOCATIONS":
        return 1
     else:
        return 0
@@ -1094,9 +1094,11 @@ def generic_commands (command, debug):
        ret_value = display_hashvalues('varas', debug)
     elif command == "GET_ALL_HINDU_KARANAS":
        ret_value = display_hashvalues('karanas', debug)
-    elif command == "GET_ALL_HASH_TABLES":
-       fp = open("sanskrit_en_names.json")
-       ret_value = json.load(fp)
+    elif command == "GET_ALL_STATIC_TABLES":
+       ret_value = get_all_hindu_panchanga_tables(debug)
+    elif command == "GET_ALL_STATIC_LOCATIONS":
+       fp = open("cities.json")
+       ret_value  = json.load(fp)
        fp.close()
     else:
        ret_value = 'None'
@@ -1115,12 +1117,15 @@ def find_given_location_from_static_db(locationName):
        location = print_err_and_return(errMsg, SUB_C_L_USAGE_STR)
     return location
 
-def display_hashvalues(tablename, debug):
+def get_all_hindu_panchanga_tables(debug):
     # open all names which are needed so that can display in str
     fp = open("sanskrit_en_names.json")
     sktnames = json.load(fp)
     fp.close()
+    return sktnames
 
+def display_hashvalues(tablename, debug):
+    sktnames = get_all_hindu_panchanga_tables(debug)
     if tablename in sktnames:
         hashtable = sktnames[tablename]
         if debug:
@@ -1169,6 +1174,7 @@ def getLattitudeAndLongitude(place, debug):
     	print("lat %s lon %s:" % (lat, lon))
     return (lat, lon)
 
+
 def parse_input_arguments_from_json_object (inputargs):
     location = dict()
 
@@ -1194,8 +1200,8 @@ def parse_input_arguments_from_json_object (inputargs):
        return print_err_and_return(errMsg, commands_available)
 
     #read location for which panchange needs to be computed, otherwise exit with error
-    if "location" in inputargs:
-        loc = inputargs["location"]
+    if "loc" in inputargs:
+        loc = inputargs["loc"]
     else:       
         errMsg = "Couldn't find valid location, provide a valid location to proceed"
         return print_err_and_return(errMsg, SUB_LOC_USAGE_STR)
@@ -1260,25 +1266,51 @@ def parse_input_arguments_from_json_object (inputargs):
        ret_value = compute_detailed_info_for_a_given_month(location, date, debug)
     elif command == "GET_PANCHANGA_YEAR":
        ret_value = compute_detailed_info_for_a_given_year(location, date, debug)
-    elif command == "GET_NEXT_HINDU_DATE":
+    elif command == "GET_PANCHANGA_NEXT_EVENT_FOR_GIVEN_INPUTS":
+        int_nak = 0
+        int_tithi = 0
+        int_masam = 0
         if "tithi" in inputargs:
-            int_tithi=int(inputargs["tithi"])
+            tithi_obj = inputargs["tithi"]
+            int_tithi=int(tithi_obj["tithi_id"])
+            if int_tithi < 1 or int_tithi > 30:
+                errMsg = "Invalid input value (" + inputargs["tithi"]["tithi_id"] + ") for -i option, provide in range 1-30."
+                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
+        if "nakshatra" in inputargs:
+            nak_obj = inputargs["nakshatra"]
+            int_nak=int(nak_obj["nak_id"])
+            if int_nak < 1 or int_nak > 27:
+                errMsg = "Invalid input value (" + inputargs["nakshatra"]["nak_id"] + ") for -n option, provide in range 1-27."
+                return print_err_and_return(errMsg, SUB_C_NM_USAGE_STR)
+        if "masam" in inputargs:
+            masam_obj = inputargs["masam"]
+            int_masam=int(masam_obj["masam_id"])
+            if int_masam < 1 or int_masam > 12:
+                errMsg = "Invalid input value (" + inputargs["masam"]["masam_id"] + ") for -m option, provide in range 1-12."
+                return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
+        #ret_value = compute_next_gegorian_date_of_give_details(location, date, int_tithi, int_masam, int_nak, debug)
+        ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
+    elif command == "GET_NEXT_HINDU_DATE_GIVEN_MASAM_TITHI":
+        if "tithi" in inputargs:
+            tithi_obj = inputargs["tithi"]
+            int_tithi=int(tithi_obj["tithi_id"])
         else:
             errMsg = "Couldn't find valid tithi, provide a valid tithi to proceed"
             return print_err_and_return(errMsg, SUB_TIT_USAGE_STR)
         if "masam" in inputargs:
-            int_masam=int(inputargs["masam"])
+            masam_obj = inputargs["masam"]
+            int_masam=int(masam_obj["masam_id"])
         else:
             errMsg = "Couldn't find valid masam, provide a valid masam to proceed"
             return print_err_and_return(errMsg, SUB_MAS_USAGE_STR)
         if int_tithi < 1 or int_tithi > 30:
-            errMsg = "Invalid input value (" + inputargs["tithi"] + ") for -i option, provide in range 1-30."
+            errMsg = "Invalid input value (" + inputargs["tithi"]["tithi_id"] + ") for -i option, provide in range 1-30."
             return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         if int_masam < 1 or int_masam > 12:
-            errMsg = "Invalid input value (" + inputargs["masam"] + ") for -m option, provide in range 1-12."
+            errMsg = "Invalid input value (" + inputargs["masam"]["masam_id"] + ") for -m option, provide in range 1-12."
             return print_err_and_return(errMsg, SUB_C_IM_USAGE_STR)
         ret_value = compute_next_gegorian_date_of_give_hindu_data(location, date, int_tithi, int_masam, debug)
-    elif command == "GET_PANCHANGA_AND_FIND_NEXT_EVENT":
+    elif command == "GET_PANCHANGA_NEXT_EVENT_IN_GIVEN_YEAR":
         if "target_year" in inputargs:
             int_target_year=int(inputargs["target_year"])
             target_date=format_date(Date(int_target_year, 1, 1)) #start from JAN 1 st of target year
@@ -1306,6 +1338,8 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
     extra_option='None'
     json_obj = dict()
     loc_obj  = dict()
+    tithi_obj =  dict()
+    masam_obj = dict()
     #no argumemts given, throw error
     if not args:
         errMsg = "Couldn't find any arguments"
@@ -1318,7 +1352,7 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
         if options.calculate_calander:
             json_obj['command'] = args[0]
             if verbose:
-                print ("Inside parse_input_arguments_from_json_object: parsing command: %s" % json_obj['command'])
+                print ("Inside read_input_arguments_from_command_line_arguments: parsing command: %s" % json_obj['command'])
             ret = validate_input_command(json_obj['command'], verbose)
             if ret == 0:
                errMsg = "Invalid input command " + json_obj['command']
@@ -1344,7 +1378,7 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
             errMsg = "Location not specified, please provide correct location."
             print_err_and_exit(parser, errMsg, MAIN_OPT_C_USAGE_STR)
 
-        json_obj['location'] = loc_obj 
+        json_obj['loc'] = loc_obj 
 
         #read the date which is mandatory parameter for calculating detailed info 
         if options.date_given:
@@ -1377,21 +1411,36 @@ def read_input_arguments_from_command_line_arguments (options, args, verbose):
                 print_err_and_exit(parser, errMsg, SUB_C_E_USAGE_STR)
 
         #read the tithi and masam given by user and start calculating gregorian date 
-        if options.tithi_given and options.masam_given:
+        if options.tithi_given:
             if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
-                if len(args) > 6 :
+                if len(args) > 5 :
                     given_tithi=(args[5])
-                    given_masam=(args[6])
-                    json_obj['tithi']=args[5]
-                    json_obj['masam']=args[6]
+                    tithi_obj['tithi_id'] = args[5]
+                    json_obj['tithi']=tithi_obj
                 else:
                     print_err_and_exit(parser, "Couldn't find arguments for tithi(-i)", SUB_C_IM_USAGE_STR)
             elif options.date_given and options.location_given:
-                if len(args) > 4 :
+                if len(args) > 3 :
                     given_tithi=(args[3])
+                    tithi_obj['tithi_id'] = args[3]
+                    json_obj['tithi']=tithi_obj
+                else:
+                    print_err_and_exit(parser, "Couldn't find enough arguments for tithi(-i)", SUB_C_IM_USAGE_STR)
+            else:
+                print_err_and_exit(parser, "Couldn't find enough arguments", SUB_C_IM_USAGE_STR)
+        if options.masam_given:
+            if options.date_given and options.longitude_given and options.latitude_given and options.timezone_given :
+                if len(args) > 6 :
+                    given_masam=(args[6])
+                    masam_obj['masam_id'] = args[6]
+                    json_obj['masam']=masam_obj
+                else:
+                    print_err_and_exit(parser, "Couldn't find arguments for masam(-m)", SUB_C_IM_USAGE_STR)
+            elif options.date_given and options.location_given:
+                if len(args) > 4 :
                     given_masam=(args[4])
-                    json_obj['tithi']=args[3]
-                    json_obj['masam']=args[4]
+                    masam_obj['masam_id'] = args[4]
+                    json_obj['masam']=masam_obj
                 else:
                     print_err_and_exit(parser, "Couldn't find enough arguments for masam(-m)", SUB_C_IM_USAGE_STR)
             else:
